@@ -1,10 +1,150 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-<html><head><title>Anki Kanji Grid</title></head><body bgcolor="#FFF">
+<html>
+<head>
+<title>Anki Kanji Grid</title>
+<script language=JavaScript>
+/*
+ * This is the function that actually highlights a text string by
+ * adding HTML tags before and after all occurrences of the search
+ * term. You can pass your own tags if you'd like, or if the
+ * highlightStartTag or highlightEndTag parameters are omitted or
+ * are empty strings then the default <font> tags will be used.
+ */
+function doHighlight(bodyText, searchTerm, highlightStartTag, highlightEndTag) 
+{
+  // the highlightStartTag and highlightEndTag parameters are optional
+  if ((!highlightStartTag) || (!highlightEndTag)) {
+    highlightStartTag = "<font style='color:blue; background-color:yellow;'>";
+    highlightEndTag = "</font>";
+  }
+  
+  // find all occurences of the search term in the given text,
+  // and add some "highlight" tags to them (we're not using a
+  // regular expression search, because we want to filter out
+  // matches that occur within HTML tags and script blocks, so
+  // we have to do a little extra validation)
+  var newText = "";
+  var i = -1;
+  var lcSearchTerm = searchTerm.toLowerCase();
+  var lcBodyText = bodyText.toLowerCase();
+    
+  while (bodyText.length > 0) {
+    i = lcBodyText.indexOf(lcSearchTerm, i+1);
+    if (i < 0) {
+      newText += bodyText;
+      bodyText = "";
+    } else {
+      // skip anything inside an HTML tag
+      if (bodyText.lastIndexOf(">", i) >= bodyText.lastIndexOf("<", i)) {
+        // skip anything inside a <script> block
+        if (lcBodyText.lastIndexOf("/script>", i) >= lcBodyText.lastIndexOf("<script", i)) {
+          newText += bodyText.substring(0, i) + highlightStartTag + bodyText.substr(i, searchTerm.length) + highlightEndTag;
+          bodyText = bodyText.substr(i + searchTerm.length);
+          lcBodyText = bodyText.toLowerCase();
+          i = -1;
+        }
+      }
+    }
+  }
+  
+  return newText;
+}
+
+
+/*
+ * This is sort of a wrapper function to the doHighlight function.
+ * It takes the searchText that you pass, optionally splits it into
+ * separate words, and transforms the text on the current web page.
+ * Only the "searchText" parameter is required; all other parameters
+ * are optional and can be omitted.
+ */
+function highlightSearchTerms(searchText, treatAsPhrase, warnOnFailure, highlightStartTag, highlightEndTag)
+{
+  // if the treatAsPhrase parameter is true, then we should search for 
+  // the entire phrase that was entered; otherwise, we will split the
+  // search string so that each word is searched for and highlighted
+  // individually
+  if (treatAsPhrase) {
+    searchArray = [searchText];
+  } else {
+    searchArray = searchText.split(" ");
+  }
+  
+  if (!document.body || typeof(document.body.innerHTML) == "undefined") {
+    if (warnOnFailure) {
+      alert("Sorry, for some reason the text of this page is unavailable. Searching will not work.");
+    }
+    return false;
+  }
+  
+  var bodyText = document.body.innerHTML;
+  for (var i = 0; i < searchArray.length; i++) {
+    bodyText = doHighlight(bodyText, searchArray[i], highlightStartTag, highlightEndTag);
+  }
+  
+  document.body.innerHTML = bodyText;
+  return true;
+}
+
+
+/*
+ * This displays a dialog box that allows a user to enter their own
+ * search terms to highlight on the page, and then passes the search
+ * text or phrase to the highlightSearchTerms function. All parameters
+ * are optional.
+ */
+function searchPrompt(defaultText, treatAsPhrase, textColor, bgColor)
+{
+  // This function prompts the user for any words that should
+  // be highlighted on this web page
+  if (!defaultText) {
+    defaultText = "";
+  }
+  
+  // we can optionally use our own highlight tag values
+  if ((!textColor) || (!bgColor)) {
+    highlightStartTag = "";
+    highlightEndTag = "";
+  } else {
+    highlightStartTag = "<font style='color:" + textColor + "; background-color:" + bgColor + ";'>";
+    highlightEndTag = "</font>";
+  }
+  
+  if (treatAsPhrase) {
+    promptText = "Please enter the phrase you'd like to search for:";
+  } else {
+    promptText = "Please enter the kanji you'd like to search for, separated by spaces:";
+  }
+  
+  searchText = prompt(promptText, defaultText);
+
+  if (!searchText)  {
+    return false;
+  }
+  
+  return highlightSearchTerms(searchText, treatAsPhrase, true, highlightStartTag, highlightEndTag);
+}
+
+
+</script>
+</head>
+<body bgcolor="#FFF">
 <span style="font-size: 3em;color: #888;">Kanji Grid</span><br>
-<div style="margin-bottom: 24pt;padding: 20pt;"><p style="float: left">Key:</p><style type="text/css">td {overflow: hidden; text-overflow: ellipsis; white-space: nowrap;} table {font-size:100%; font-family:Hiragino Mincho Pro W3;}.key{display:inline-block;width:3em;}a,a:visited{color:#000;text-decoration:none;}</style><p style="float: right">Weak&nbsp;<span class="key" style="background-color: #E67373;">&nbsp;</span><span class="key" style="background-color: #E6C973;">&nbsp;</span><span class="key" style="background-color: #ACE673;">&nbsp;</span><span class="key" style="background-color: #73E690;">&nbsp;</span><span class="key" style="background-color: #73E6E6;">&nbsp;</span><span class="key" style="background-color: #7390E6;">&nbsp;</span><span class="key" style="background-color: #AC73E6;">&nbsp;</span>&nbsp;Strong</p></div>
+<div style="margin-bottom: 24pt;padding: 20pt;"><p style="float: left">Key:</p>
+<style type="text/css">
+td {overflow: hidden; text-overflow: ellipsis; white-space: nowrap;} 
+table {font-size:100%; font-family:Hiragino Mincho Pro W3;}
+.key{display:inline-block;width:3em;}
+a,a:visited{color:#000;text-decoration:none;}
+</style>
+<p style="float: right">Weak&nbsp;<span class="key" style="background-color: #E67373;">&nbsp;</span><span class="key" style="background-color: #E6C973;">&nbsp;</span><span class="key" style="background-color: #ACE673;">&nbsp;</span><span class="key" style="background-color: #73E690;">&nbsp;</span><span class="key" style="background-color: #73E6E6;">&nbsp;</span><span class="key" style="background-color: #7390E6;">&nbsp;</span><span class="key" style="background-color: #AC73E6;">&nbsp;</span>&nbsp;Strong</p></div>
 <div style="clear: both;"><br><hr style="border-style: dashed;border-color: #666;width: 60%;"><br></div>
 <center>
 <h4 style="color:#888;">2226 total unique kanji</h4>
+<form>
+<input type="button" value="Search" onClick="searchPrompt('', false);">
+<input type=button value="refresh" onClick="window.location.reload()">
+</form>
 <table border-collapse: collapse; width='100%'><tr>
 	<td align=center valign=top style="background:#7374E6;"><a href="kk/一.html"><ruby>一<rt>1</rt></ruby></a></td>
 	<td align=center valign=top style="background:#7378E6;"><a href="kk/二.html"><ruby>二<rt>2</rt></ruby></a></td>
@@ -62,7 +202,7 @@
 	<td align=center valign=top style="background:#C8E673;"><a href="kk/卓.html"><ruby>卓<rt>52</rt></ruby></a></td>
 	<td align=center valign=top style="background:#C5E673;"><a href="kk/朝.html"><ruby>朝<rt>53</rt></ruby></a></td>
 	<td align=center valign=top style="background:#CCE673;"><a href="kk/嘲.html"><ruby>嘲<rt>54</rt></ruby></a></td>
-	<td align=center valign=top style="background:#7373E6;"><a href="kk/只.html"><ruby>只<rt>55</rt></ruby></a></td>
+	<td align=center valign=top style="background:#738EE6;"><a href="kk/只.html"><ruby>只<rt>55</rt></ruby></a></td>
 	<td align=center valign=top style="background:#7873E6;"><a href="kk/貝.html"><ruby>貝<rt>56</rt></ruby></a></td>
 	<td align=center valign=top style="background:#73E6DB;"><a href="kk/唄.html"><ruby>唄<rt>57</rt></ruby></a></td>
 	<td align=center valign=top style="background:#C8E673;"><a href="kk/貞.html"><ruby>貞<rt>58</rt></ruby></a></td>
@@ -103,8 +243,8 @@
 	<td align=center valign=top style="background:#73E67D;"><a href="kk/副.html"><ruby>副<rt>93</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E2E673;"><a href="kk/別.html"><ruby>別<rt>94</rt></ruby></a></td>
 	<td align=center valign=top style="background:#73E2E6;"><a href="kk/丁.html"><ruby>丁<rt>95</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6C873;"><a href="kk/町.html"><ruby>町<rt>96</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68E73;"><a href="kk/可.html"><ruby>可<rt>97</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69973;"><a href="kk/町.html"><ruby>町<rt>96</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6A373;"><a href="kk/可.html"><ruby>可<rt>97</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BB73;"><a href="kk/頂.html"><ruby>頂<rt>98</rt></ruby></a></td>
 	<td align=center valign=top style="background:#7473E6;"><a href="kk/子.html"><ruby>子<rt>99</rt></ruby></a></td>
 	<td align=center valign=top style="background:#7391E6;"><a href="kk/孔.html"><ruby>孔<rt>100</rt></ruby></a></td>
@@ -152,7 +292,7 @@
 	<td align=center valign=top style="background:#E6AD73;"><a href="kk/泉.html"><ruby>泉<rt>140</rt></ruby></a></td>
 	<td align=center valign=top style="background:#DBE673;"><a href="kk/腺.html"><ruby>腺<rt>141</rt></ruby></a></td>
 	<td align=center valign=top style="background:#C1E673;"><a href="kk/原.html"><ruby>原<rt>142</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6BB73;"><a href="kk/願.html"><ruby>願<rt>143</rt></ruby></a></td>
+	<td align=center valign=top style="background:#D0E673;"><a href="kk/願.html"><ruby>願<rt>143</rt></ruby></a></td>
 	<td align=center valign=top style="background:#73E2E6;"><a href="kk/泳.html"><ruby>泳<rt>144</rt></ruby></a></td>
 	<td align=center valign=top style="background:#73E6CB;"><a href="kk/沼.html"><ruby>沼<rt>145</rt></ruby></a></td>
 	<td align=center valign=top style="background:#73E6C5;"><a href="kk/沖.html"><ruby>沖<rt>146</rt></ruby></a></td>
@@ -179,7 +319,7 @@
 	<td align=center valign=top style="background:#CCE673;"><a href="kk/垣.html"><ruby>垣<rt>165</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C473;"><a href="kk/填.html"><ruby>填<rt>166</rt></ruby></a></td>
 	<td align=center valign=top style="background:#C1E673;"><a href="kk/圭.html"><ruby>圭<rt>167</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6BB73;"><a href="kk/封.html"><ruby>封<rt>168</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E68973;"><a href="kk/封.html"><ruby>封<rt>168</rt></ruby></a></td>
 	<td align=center valign=top style="background:#C1E673;"><a href="kk/涯.html"><ruby>涯<rt>169</rt></ruby></a></td>
 	<td align=center valign=top style="background:#DEE673;"><a href="kk/寺.html"><ruby>寺<rt>170</rt></ruby></a></td>
 	<td align=center valign=top style="background:#85E673;"><a href="kk/時.html"><ruby>時<rt>171</rt></ruby></a></td>
@@ -191,9 +331,9 @@
 	<td align=center valign=top style="background:#73E6CE;"><a href="kk/灯.html"><ruby>灯<rt>177</rt></ruby></a></td>
 	<td align=center valign=top style="background:#D3E673;"><a href="kk/畑.html"><ruby>畑<rt>178</rt></ruby></a></td>
 	<td align=center valign=top style="background:#BEE673;"><a href="kk/災.html"><ruby>災<rt>179</rt></ruby></a></td>
-	<td align=center valign=top style="background:#DEE673;"><a href="kk/灰.html"><ruby>灰<rt>180</rt></ruby></a></td>
+	<td align=center valign=top style="background:#73E682;"><a href="kk/灰.html"><ruby>灰<rt>180</rt></ruby></a></td>
 	<td align=center valign=top style="background:#93E673;"><a href="kk/点.html"><ruby>点<rt>181</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6C873;"><a href="kk/照.html"><ruby>照<rt>182</rt></ruby></a></td>
+	<td align=center valign=top style="background:#D7E673;"><a href="kk/照.html"><ruby>照<rt>182</rt></ruby></a></td>
 	<td align=center valign=top style="background:#73E6E3;"><a href="kk/魚.html"><ruby>魚<rt>183</rt></ruby></a></td>
 	<td align=center valign=top style="background:#DBE673;"><a href="kk/漁.html"><ruby>漁<rt>184</rt></ruby></a></td>
 	<td align=center valign=top style="background:#BEE673;"><a href="kk/里.html"><ruby>里<rt>185</rt></ruby></a></td>
@@ -237,13 +377,13 @@
 	<td align=center valign=top style="background:#E6BB73;"><a href="kk/村.html"><ruby>村<rt>221</rt></ruby></a></td>
 	<td align=center valign=top style="background:#93E673;"><a href="kk/相.html"><ruby>相<rt>222</rt></ruby></a></td>
 	<td align=center valign=top style="background:#88E673;"><a href="kk/机.html"><ruby>机<rt>223</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6E273;"><a href="kk/本.html"><ruby>本<rt>224</rt></ruby></a></td>
+	<td align=center valign=top style="background:#99E673;"><a href="kk/本.html"><ruby>本<rt>224</rt></ruby></a></td>
 	<td align=center valign=top style="background:#73E6E4;"><a href="kk/札.html"><ruby>札<rt>225</rt></ruby></a></td>
 	<td align=center valign=top style="background:#73E3E6;"><a href="kk/暦.html"><ruby>暦<rt>226</rt></ruby></a></td>
 	<td align=center valign=top style="background:#DBE673;"><a href="kk/案.html"><ruby>案<rt>227</rt></ruby></a></td>
 	<td align=center valign=top style="background:#C5E673;"><a href="kk/燥.html"><ruby>燥<rt>228</rt></ruby></a></td>
 	<td align=center valign=top style="background:#A8E673;"><a href="kk/未.html"><ruby>未<rt>229</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6E673;"><a href="kk/末.html"><ruby>末<rt>230</rt></ruby></a></td>
+	<td align=center valign=top style="background:#A8E673;"><a href="kk/末.html"><ruby>末<rt>230</rt></ruby></a></td>
 	<td align=center valign=top style="background:#BEE673;"><a href="kk/昧.html"><ruby>昧<rt>231</rt></ruby></a></td>
 	<td align=center valign=top style="background:#AEE673;"><a href="kk/沫.html"><ruby>沫<rt>232</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6AD73;"><a href="kk/味.html"><ruby>味<rt>233</rt></ruby></a></td>
@@ -291,7 +431,7 @@
 	<td align=center valign=top style="background:#C1E673;"><a href="kk/宝.html"><ruby>宝<rt>273</rt></ruby></a></td>
 	<td align=center valign=top style="background:#C5E673;"><a href="kk/珠.html"><ruby>珠<rt>274</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C473;"><a href="kk/現.html"><ruby>現<rt>275</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6B173;"><a href="kk/玩.html"><ruby>玩<rt>276</rt></ruby></a></td>
+	<td align=center valign=top style="background:#C8E673;"><a href="kk/玩.html"><ruby>玩<rt>276</rt></ruby></a></td>
 	<td align=center valign=top style="background:#D0E673;"><a href="kk/狂.html"><ruby>狂<rt>277</rt></ruby></a></td>
 	<td align=center valign=top style="background:#DBE673;"><a href="kk/旺.html"><ruby>旺<rt>278</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B673;"><a href="kk/皇.html"><ruby>皇<rt>279</rt></ruby></a></td>
@@ -323,7 +463,7 @@
 	<td align=center valign=top style="background:#90E673;"><a href="kk/巡.html"><ruby>巡<rt>303</rt></ruby></a></td>
 	<td align=center valign=top style="background:#7373E6;"><a href="kk/車.html"><ruby>車<rt>304</rt></ruby></a></td>
 	<td align=center valign=top style="background:#D7E673;"><a href="kk/連.html"><ruby>連<rt>305</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6C473;"><a href="kk/軌.html"><ruby>軌<rt>306</rt></ruby></a></td>
+	<td align=center valign=top style="background:#D3E673;"><a href="kk/軌.html"><ruby>軌<rt>306</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BF73;"><a href="kk/輸.html"><ruby>輸<rt>307</rt></ruby></a></td>
 	<td align=center valign=top style="background:#D7E673;"><a href="kk/喩.html"><ruby>喩<rt>308</rt></ruby></a></td>
 	<td align=center valign=top style="background:#C1E673;"><a href="kk/前.html"><ruby>前<rt>309</rt></ruby></a></td>
@@ -341,7 +481,7 @@
 	<td align=center valign=top style="background:#DEE673;"><a href="kk/冗.html"><ruby>冗<rt>321</rt></ruby></a></td>
 	<td align=center valign=top style="background:#DEE673;"><a href="kk/冥.html"><ruby>冥<rt>322</rt></ruby></a></td>
 	<td align=center valign=top style="background:#C5E673;"><a href="kk/軍.html"><ruby>軍<rt>323</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E69473;"><a href="kk/輝.html"><ruby>輝<rt>324</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6B673;"><a href="kk/輝.html"><ruby>輝<rt>324</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6D573;"><a href="kk/運.html"><ruby>運<rt>325</rt></ruby></a></td>
 	<td align=center valign=top style="background:#CCE673;"><a href="kk/冠.html"><ruby>冠<rt>326</rt></ruby></a></td>
 	<td align=center valign=top style="background:#C1E673;"><a href="kk/夢.html"><ruby>夢<rt>327</rt></ruby></a></td>
@@ -388,7 +528,7 @@
 	<td align=center valign=top style="background:#D0E673;"><a href="kk/詔.html"><ruby>詔<rt>366</rt></ruby></a></td>
 	<td align=center valign=top style="background:#D3E673;"><a href="kk/詰.html"><ruby>詰<rt>367</rt></ruby></a></td>
 	<td align=center valign=top style="background:#D3E673;"><a href="kk/話.html"><ruby>話<rt>368</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6B673;"><a href="kk/詠.html"><ruby>詠<rt>369</rt></ruby></a></td>
+	<td align=center valign=top style="background:#C1E673;"><a href="kk/詠.html"><ruby>詠<rt>369</rt></ruby></a></td>
 	<td align=center valign=top style="background:#73E6D3;"><a href="kk/詩.html"><ruby>詩<rt>370</rt></ruby></a></td>
 	<td align=center valign=top style="background:#C5E673;"><a href="kk/語.html"><ruby>語<rt>371</rt></ruby></a></td>
 	<td align=center valign=top style="background:#DEE673;"><a href="kk/読.html"><ruby>読<rt>372</rt></ruby></a></td>
@@ -455,14 +595,14 @@
 	<td align=center valign=top style="background:#D7E673;"><a href="kk/初.html"><ruby>初<rt>431</rt></ruby></a></td>
 	<td align=center valign=top style="background:#7397E6;"><a href="kk/巾.html"><ruby>巾<rt>432</rt></ruby></a></td>
 	<td align=center valign=top style="background:#73E679;"><a href="kk/布.html"><ruby>布<rt>433</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6A373;"><a href="kk/帆.html"><ruby>帆<rt>434</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6BF73;"><a href="kk/帆.html"><ruby>帆<rt>434</rt></ruby></a></td>
 	<td align=center valign=top style="background:#D3E673;"><a href="kk/幅.html"><ruby>幅<rt>435</rt></ruby></a></td>
 	<td align=center valign=top style="background:#99E673;"><a href="kk/帽.html"><ruby>帽<rt>436</rt></ruby></a></td>
 	<td align=center valign=top style="background:#D3E673;"><a href="kk/幕.html"><ruby>幕<rt>437</rt></ruby></a></td>
 	<td align=center valign=top style="background:#DBE673;"><a href="kk/幌.html"><ruby>幌<rt>438</rt></ruby></a></td>
 	<td align=center valign=top style="background:#90E673;"><a href="kk/錦.html"><ruby>錦<rt>439</rt></ruby></a></td>
 	<td align=center valign=top style="background:#DEE673;"><a href="kk/市.html"><ruby>市<rt>440</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6AD73;"><a href="kk/柿.html"><ruby>柿<rt>441</rt></ruby></a></td>
+	<td align=center valign=top style="background:#DEE673;"><a href="kk/柿.html"><ruby>柿<rt>441</rt></ruby></a></td>
 	<td align=center valign=top style="background:#C8E673;"><a href="kk/姉.html"><ruby>姉<rt>442</rt></ruby></a></td>
 	<td align=center valign=top style="background:#BEE673;"><a href="kk/肺.html"><ruby>肺<rt>443</rt></ruby></a></td>
 	<td align=center valign=top style="background:#D7E673;"><a href="kk/帯.html"><ruby>帯<rt>444</rt></ruby></a></td>
@@ -474,7 +614,7 @@
 	<td align=center valign=top style="background:#E6AD73;"><a href="kk/芸.html"><ruby>芸<rt>450</rt></ruby></a></td>
 </tr>
 <tr>
-	<td align=center valign=top style="background:#E6E273;"><a href="kk/雨.html"><ruby>雨<rt>451</rt></ruby></a></td>
+	<td align=center valign=top style="background:#ABE673;"><a href="kk/雨.html"><ruby>雨<rt>451</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E2E673;"><a href="kk/雲.html"><ruby>雲<rt>452</rt></ruby></a></td>
 	<td align=center valign=top style="background:#D3E673;"><a href="kk/曇.html"><ruby>曇<rt>453</rt></ruby></a></td>
 	<td align=center valign=top style="background:#D3E673;"><a href="kk/雷.html"><ruby>雷<rt>454</rt></ruby></a></td>
@@ -635,7 +775,7 @@
 	<td align=center valign=top style="background:#CCE673;"><a href="kk/進.html"><ruby>進<rt>603</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BF73;"><a href="kk/雑.html"><ruby>雑<rt>604</rt></ruby></a></td>
 	<td align=center valign=top style="background:#DBE673;"><a href="kk/雌.html"><ruby>雌<rt>605</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6B673;"><a href="kk/準.html"><ruby>準<rt>606</rt></ruby></a></td>
+	<td align=center valign=top style="background:#DEE673;"><a href="kk/準.html"><ruby>準<rt>606</rt></ruby></a></td>
 	<td align=center valign=top style="background:#D7E673;"><a href="kk/奮.html"><ruby>奮<rt>607</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BF73;"><a href="kk/奪.html"><ruby>奪<rt>608</rt></ruby></a></td>
 	<td align=center valign=top style="background:#C1E673;"><a href="kk/確.html"><ruby>確<rt>609</rt></ruby></a></td>
@@ -647,7 +787,7 @@
 	<td align=center valign=top style="background:#73E6CB;"><a href="kk/羽.html"><ruby>羽<rt>615</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C873;"><a href="kk/習.html"><ruby>習<rt>616</rt></ruby></a></td>
 	<td align=center valign=top style="background:#D7E673;"><a href="kk/翌.html"><ruby>翌<rt>617</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6E673;"><a href="kk/曜.html"><ruby>曜<rt>618</rt></ruby></a></td>
+	<td align=center valign=top style="background:#ABE673;"><a href="kk/曜.html"><ruby>曜<rt>618</rt></ruby></a></td>
 	<td align=center valign=top style="background:#D3E673;"><a href="kk/濯.html"><ruby>濯<rt>619</rt></ruby></a></td>
 	<td align=center valign=top style="background:#73A3E6;"><a href="kk/曰.html"><ruby>曰<rt>620</rt></ruby></a></td>
 	<td align=center valign=top style="background:#A4E673;"><a href="kk/困.html"><ruby>困<rt>621</rt></ruby></a></td>
@@ -698,9 +838,9 @@
 	<td align=center valign=top style="background:#E6AD73;"><a href="kk/寡.html"><ruby>寡<rt>664</rt></ruby></a></td>
 	<td align=center valign=top style="background:#AEE673;"><a href="kk/忙.html"><ruby>忙<rt>665</rt></ruby></a></td>
 	<td align=center valign=top style="background:#D0E673;"><a href="kk/悦.html"><ruby>悦<rt>666</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6BF73;"><a href="kk/恒.html"><ruby>恒<rt>667</rt></ruby></a></td>
+	<td align=center valign=top style="background:#C5E673;"><a href="kk/恒.html"><ruby>恒<rt>667</rt></ruby></a></td>
 	<td align=center valign=top style="background:#DBE673;"><a href="kk/悼.html"><ruby>悼<rt>668</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6BF73;"><a href="kk/悟.html"><ruby>悟<rt>669</rt></ruby></a></td>
+	<td align=center valign=top style="background:#CCE673;"><a href="kk/悟.html"><ruby>悟<rt>669</rt></ruby></a></td>
 	<td align=center valign=top style="background:#93E673;"><a href="kk/怖.html"><ruby>怖<rt>670</rt></ruby></a></td>
 	<td align=center valign=top style="background:#D3E673;"><a href="kk/慌.html"><ruby>慌<rt>671</rt></ruby></a></td>
 	<td align=center valign=top style="background:#DBE673;"><a href="kk/悔.html"><ruby>悔<rt>672</rt></ruby></a></td>
@@ -726,9 +866,9 @@
 	<td align=center valign=top style="background:#C5E673;"><a href="kk/議.html"><ruby>議<rt>692</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69E73;"><a href="kk/犠.html"><ruby>犠<rt>693</rt></ruby></a></td>
 	<td align=center valign=top style="background:#D7E673;"><a href="kk/抹.html"><ruby>抹<rt>694</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6AD73;"><a href="kk/拭.html"><ruby>拭<rt>695</rt></ruby></a></td>
+	<td align=center valign=top style="background:#BEE673;"><a href="kk/拭.html"><ruby>拭<rt>695</rt></ruby></a></td>
 	<td align=center valign=top style="background:#DBE673;"><a href="kk/拉.html"><ruby>拉<rt>696</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6B173;"><a href="kk/抱.html"><ruby>抱<rt>697</rt></ruby></a></td>
+	<td align=center valign=top style="background:#C8E673;"><a href="kk/抱.html"><ruby>抱<rt>697</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E2E673;"><a href="kk/搭.html"><ruby>搭<rt>698</rt></ruby></a></td>
 	<td align=center valign=top style="background:#A4E673;"><a href="kk/抄.html"><ruby>抄<rt>699</rt></ruby></a></td>
 	<td align=center valign=top style="background:#C5E673;"><a href="kk/抗.html"><ruby>抗<rt>700</rt></ruby></a></td>
@@ -744,7 +884,7 @@
 	<td align=center valign=top style="background:#D7E673;"><a href="kk/拐.html"><ruby>拐<rt>708</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6E273;"><a href="kk/摘.html"><ruby>摘<rt>709</rt></ruby></a></td>
 	<td align=center valign=top style="background:#CCE673;"><a href="kk/挑.html"><ruby>挑<rt>710</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6BB73;"><a href="kk/指.html"><ruby>指<rt>711</rt></ruby></a></td>
+	<td align=center valign=top style="background:#CCE673;"><a href="kk/指.html"><ruby>指<rt>711</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B673;"><a href="kk/持.html"><ruby>持<rt>712</rt></ruby></a></td>
 	<td align=center valign=top style="background:#C1E673;"><a href="kk/拶.html"><ruby>拶<rt>713</rt></ruby></a></td>
 	<td align=center valign=top style="background:#D0E673;"><a href="kk/括.html"><ruby>括<rt>714</rt></ruby></a></td>
@@ -766,7 +906,7 @@
 	<td align=center valign=top style="background:#DEE673;"><a href="kk/戒.html"><ruby>戒<rt>730</rt></ruby></a></td>
 	<td align=center valign=top style="background:#C5E673;"><a href="kk/弄.html"><ruby>弄<rt>731</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E2E673;"><a href="kk/械.html"><ruby>械<rt>732</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68973;"><a href="kk/鼻.html"><ruby>鼻<rt>733</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E68E73;"><a href="kk/鼻.html"><ruby>鼻<rt>733</rt></ruby></a></td>
 	<td align=center valign=top style="background:#CCE673;"><a href="kk/刑.html"><ruby>刑<rt>734</rt></ruby></a></td>
 	<td align=center valign=top style="background:#D0E673;"><a href="kk/型.html"><ruby>型<rt>735</rt></ruby></a></td>
 	<td align=center valign=top style="background:#7391E6;"><a href="kk/才.html"><ruby>才<rt>736</rt></ruby></a></td>
@@ -797,11 +937,11 @@
 	<td align=center valign=top style="background:#CCE673;"><a href="kk/怒.html"><ruby>怒<rt>759</rt></ruby></a></td>
 	<td align=center valign=top style="background:#AEE673;"><a href="kk/友.html"><ruby>友<rt>760</rt></ruby></a></td>
 	<td align=center valign=top style="background:#CCE673;"><a href="kk/抜.html"><ruby>抜<rt>761</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6D173;"><a href="kk/投.html"><ruby>投<rt>762</rt></ruby></a></td>
+	<td align=center valign=top style="background:#ABE673;"><a href="kk/投.html"><ruby>投<rt>762</rt></ruby></a></td>
 	<td align=center valign=top style="background:#D0E673;"><a href="kk/没.html"><ruby>没<rt>763</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E2E673;"><a href="kk/股.html"><ruby>股<rt>764</rt></ruby></a></td>
 	<td align=center valign=top style="background:#DBE673;"><a href="kk/設.html"><ruby>設<rt>765</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6C473;"><a href="kk/撃.html"><ruby>撃<rt>766</rt></ruby></a></td>
+	<td align=center valign=top style="background:#C5E673;"><a href="kk/撃.html"><ruby>撃<rt>766</rt></ruby></a></td>
 	<td align=center valign=top style="background:#96E673;"><a href="kk/殻.html"><ruby>殻<rt>767</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E2E673;"><a href="kk/支.html"><ruby>支<rt>768</rt></ruby></a></td>
 	<td align=center valign=top style="background:#D7E673;"><a href="kk/技.html"><ruby>技<rt>769</rt></ruby></a></td>
@@ -819,14 +959,14 @@
 	<td align=center valign=top style="background:#CCE673;"><a href="kk/板.html"><ruby>板<rt>781</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6A373;"><a href="kk/返.html"><ruby>返<rt>782</rt></ruby></a></td>
 	<td align=center valign=top style="background:#D0E673;"><a href="kk/販.html"><ruby>販<rt>783</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6C873;"><a href="kk/爪.html"><ruby>爪<rt>784</rt></ruby></a></td>
+	<td align=center valign=top style="background:#A8E673;"><a href="kk/爪.html"><ruby>爪<rt>784</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E2E673;"><a href="kk/妥.html"><ruby>妥<rt>785</rt></ruby></a></td>
 	<td align=center valign=top style="background:#9CE673;"><a href="kk/乳.html"><ruby>乳<rt>786</rt></ruby></a></td>
 	<td align=center valign=top style="background:#9CE673;"><a href="kk/浮.html"><ruby>浮<rt>787</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C873;"><a href="kk/淫.html"><ruby>淫<rt>788</rt></ruby></a></td>
 	<td align=center valign=top style="background:#C5E673;"><a href="kk/将.html"><ruby>将<rt>789</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6AD73;"><a href="kk/奨.html"><ruby>奨<rt>790</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6A373;"><a href="kk/采.html"><ruby>采<rt>791</rt></ruby></a></td>
+	<td align=center valign=top style="background:#BEE673;"><a href="kk/奨.html"><ruby>奨<rt>790</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6AD73;"><a href="kk/采.html"><ruby>采<rt>791</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6AD73;"><a href="kk/採.html"><ruby>採<rt>792</rt></ruby></a></td>
 	<td align=center valign=top style="background:#D7E673;"><a href="kk/菜.html"><ruby>菜<rt>793</rt></ruby></a></td>
 	<td align=center valign=top style="background:#C5E673;"><a href="kk/受.html"><ruby>受<rt>794</rt></ruby></a></td>
@@ -850,7 +990,7 @@
 	<td align=center valign=top style="background:#D7E673;"><a href="kk/胎.html"><ruby>胎<rt>810</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C473;"><a href="kk/窓.html"><ruby>窓<rt>811</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C473;"><a href="kk/去.html"><ruby>去<rt>812</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6BB73;"><a href="kk/法.html"><ruby>法<rt>813</rt></ruby></a></td>
+	<td align=center valign=top style="background:#D0E673;"><a href="kk/法.html"><ruby>法<rt>813</rt></ruby></a></td>
 	<td align=center valign=top style="background:#D7E673;"><a href="kk/会.html"><ruby>会<rt>814</rt></ruby></a></td>
 	<td align=center valign=top style="background:#D0E673;"><a href="kk/至.html"><ruby>至<rt>815</rt></ruby></a></td>
 	<td align=center valign=top style="background:#C5E673;"><a href="kk/室.html"><ruby>室<rt>816</rt></ruby></a></td>
@@ -877,14 +1017,14 @@
 	<td align=center valign=top style="background:#BEE673;"><a href="kk/密.html"><ruby>密<rt>837</rt></ruby></a></td>
 	<td align=center valign=top style="background:#CCE673;"><a href="kk/蜜.html"><ruby>蜜<rt>838</rt></ruby></a></td>
 	<td align=center valign=top style="background:#CCE673;"><a href="kk/嵐.html"><ruby>嵐<rt>839</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E67E73;"><a href="kk/崎.html"><ruby>崎<rt>840</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69E73;"><a href="kk/崎.html"><ruby>崎<rt>840</rt></ruby></a></td>
 	<td align=center valign=top style="background:#CCE673;"><a href="kk/崖.html"><ruby>崖<rt>841</rt></ruby></a></td>
 	<td align=center valign=top style="background:#73E6E4;"><a href="kk/入.html"><ruby>入<rt>842</rt></ruby></a></td>
 	<td align=center valign=top style="background:#C8E673;"><a href="kk/込.html"><ruby>込<rt>843</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6DD73;"><a href="kk/分.html"><ruby>分<rt>844</rt></ruby></a></td>
 	<td align=center valign=top style="background:#93E673;"><a href="kk/貧.html"><ruby>貧<rt>845</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E2E673;"><a href="kk/頒.html"><ruby>頒<rt>846</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6C873;"><a href="kk/公.html"><ruby>公<rt>847</rt></ruby></a></td>
+	<td align=center valign=top style="background:#9CE673;"><a href="kk/公.html"><ruby>公<rt>847</rt></ruby></a></td>
 	<td align=center valign=top style="background:#A1E673;"><a href="kk/松.html"><ruby>松<rt>848</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6A373;"><a href="kk/翁.html"><ruby>翁<rt>849</rt></ruby></a></td>
 	<td align=center valign=top style="background:#BEE673;"><a href="kk/訟.html"><ruby>訟<rt>850</rt></ruby></a></td>
@@ -937,7 +1077,7 @@
 	<td align=center valign=top style="background:#D0E673;"><a href="kk/置.html"><ruby>置<rt>895</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6A373;"><a href="kk/罰.html"><ruby>罰<rt>896</rt></ruby></a></td>
 	<td align=center valign=top style="background:#D3E673;"><a href="kk/寧.html"><ruby>寧<rt>897</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6BB73;"><a href="kk/濁.html"><ruby>濁<rt>898</rt></ruby></a></td>
+	<td align=center valign=top style="background:#CCE673;"><a href="kk/濁.html"><ruby>濁<rt>898</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E2E673;"><a href="kk/環.html"><ruby>環<rt>899</rt></ruby></a></td>
 	<td align=center valign=top style="background:#DBE673;"><a href="kk/還.html"><ruby>還<rt>900</rt></ruby></a></td>
 </tr>
@@ -948,10 +1088,10 @@
 	<td align=center valign=top style="background:#D7E673;"><a href="kk/規.html"><ruby>規<rt>904</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BB73;"><a href="kk/替.html"><ruby>替<rt>905</rt></ruby></a></td>
 	<td align=center valign=top style="background:#D0E673;"><a href="kk/賛.html"><ruby>賛<rt>906</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6C873;"><a href="kk/潜.html"><ruby>潜<rt>907</rt></ruby></a></td>
+	<td align=center valign=top style="background:#DBE673;"><a href="kk/潜.html"><ruby>潜<rt>907</rt></ruby></a></td>
 	<td align=center valign=top style="background:#DBE673;"><a href="kk/失.html"><ruby>失<rt>908</rt></ruby></a></td>
 	<td align=center valign=top style="background:#8BE673;"><a href="kk/鉄.html"><ruby>鉄<rt>909</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6C873;"><a href="kk/迭.html"><ruby>迭<rt>910</rt></ruby></a></td>
+	<td align=center valign=top style="background:#C5E673;"><a href="kk/迭.html"><ruby>迭<rt>910</rt></ruby></a></td>
 	<td align=center valign=top style="background:#99E673;"><a href="kk/臣.html"><ruby>臣<rt>911</rt></ruby></a></td>
 	<td align=center valign=top style="background:#BEE673;"><a href="kk/姫.html"><ruby>姫<rt>912</rt></ruby></a></td>
 	<td align=center valign=top style="background:#BEE673;"><a href="kk/蔵.html"><ruby>蔵<rt>913</rt></ruby></a></td>
@@ -962,11 +1102,11 @@
 	<td align=center valign=top style="background:#DEE673;"><a href="kk/臨.html"><ruby>臨<rt>918</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B173;"><a href="kk/覧.html"><ruby>覧<rt>919</rt></ruby></a></td>
 	<td align=center valign=top style="background:#73E6B3;"><a href="kk/巨.html"><ruby>巨<rt>920</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6C473;"><a href="kk/拒.html"><ruby>拒<rt>921</rt></ruby></a></td>
+	<td align=center valign=top style="background:#D7E673;"><a href="kk/拒.html"><ruby>拒<rt>921</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6DD73;"><a href="kk/力.html"><ruby>力<rt>922</rt></ruby></a></td>
 	<td align=center valign=top style="background:#73E6E3;"><a href="kk/男.html"><ruby>男<rt>923</rt></ruby></a></td>
 	<td align=center valign=top style="background:#D3E673;"><a href="kk/労.html"><ruby>労<rt>924</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6B673;"><a href="kk/募.html"><ruby>募<rt>925</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6A373;"><a href="kk/募.html"><ruby>募<rt>925</rt></ruby></a></td>
 	<td align=center valign=top style="background:#C5E673;"><a href="kk/劣.html"><ruby>劣<rt>926</rt></ruby></a></td>
 	<td align=center valign=top style="background:#C5E673;"><a href="kk/功.html"><ruby>功<rt>927</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6AD73;"><a href="kk/勧.html"><ruby>勧<rt>928</rt></ruby></a></td>
@@ -987,14 +1127,14 @@
 	<td align=center valign=top style="background:#D3E673;"><a href="kk/徒.html"><ruby>徒<rt>943</rt></ruby></a></td>
 	<td align=center valign=top style="background:#DEE673;"><a href="kk/待.html"><ruby>待<rt>944</rt></ruby></a></td>
 	<td align=center valign=top style="background:#C5E673;"><a href="kk/往.html"><ruby>往<rt>945</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6B673;"><a href="kk/征.html"><ruby>征<rt>946</rt></ruby></a></td>
+	<td align=center valign=top style="background:#C5E673;"><a href="kk/征.html"><ruby>征<rt>946</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BB73;"><a href="kk/径.html"><ruby>径<rt>947</rt></ruby></a></td>
 	<td align=center valign=top style="background:#D3E673;"><a href="kk/彼.html"><ruby>彼<rt>948</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6E273;"><a href="kk/役.html"><ruby>役<rt>949</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6C473;"><a href="kk/徳.html"><ruby>徳<rt>950</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E2E673;"><a href="kk/徳.html"><ruby>徳<rt>950</rt></ruby></a></td>
 </tr>
 <tr>
-	<td align=center valign=top style="background:#E6C473;"><a href="kk/徹.html"><ruby>徹<rt>951</rt></ruby></a></td>
+	<td align=center valign=top style="background:#D3E673;"><a href="kk/徹.html"><ruby>徹<rt>951</rt></ruby></a></td>
 	<td align=center valign=top style="background:#D7E673;"><a href="kk/徴.html"><ruby>徴<rt>952</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69473;"><a href="kk/懲.html"><ruby>懲<rt>953</rt></ruby></a></td>
 	<td align=center valign=top style="background:#DBE673;"><a href="kk/微.html"><ruby>微<rt>954</rt></ruby></a></td>
@@ -1007,7 +1147,7 @@
 	<td align=center valign=top style="background:#D0E673;"><a href="kk/税.html"><ruby>税<rt>961</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BF73;"><a href="kk/稚.html"><ruby>稚<rt>962</rt></ruby></a></td>
 	<td align=center valign=top style="background:#A8E673;"><a href="kk/和.html"><ruby>和<rt>963</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6C873;"><a href="kk/移.html"><ruby>移<rt>964</rt></ruby></a></td>
+	<td align=center valign=top style="background:#AEE673;"><a href="kk/移.html"><ruby>移<rt>964</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BF73;"><a href="kk/秒.html"><ruby>秒<rt>965</rt></ruby></a></td>
 	<td align=center valign=top style="background:#90E673;"><a href="kk/秋.html"><ruby>秋<rt>966</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BB73;"><a href="kk/愁.html"><ruby>愁<rt>967</rt></ruby></a></td>
@@ -1020,23 +1160,23 @@
 	<td align=center valign=top style="background:#E2E673;"><a href="kk/穫.html"><ruby>穫<rt>974</rt></ruby></a></td>
 	<td align=center valign=top style="background:#C1E673;"><a href="kk/穂.html"><ruby>穂<rt>975</rt></ruby></a></td>
 	<td align=center valign=top style="background:#DBE673;"><a href="kk/稲.html"><ruby>稲<rt>976</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6B673;"><a href="kk/香.html"><ruby>香<rt>977</rt></ruby></a></td>
+	<td align=center valign=top style="background:#CCE673;"><a href="kk/香.html"><ruby>香<rt>977</rt></ruby></a></td>
 	<td align=center valign=top style="background:#CCE673;"><a href="kk/季.html"><ruby>季<rt>978</rt></ruby></a></td>
 	<td align=center valign=top style="background:#DBE673;"><a href="kk/委.html"><ruby>委<rt>979</rt></ruby></a></td>
 	<td align=center valign=top style="background:#C8E673;"><a href="kk/秀.html"><ruby>秀<rt>980</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6BB73;"><a href="kk/透.html"><ruby>透<rt>981</rt></ruby></a></td>
+	<td align=center valign=top style="background:#C5E673;"><a href="kk/透.html"><ruby>透<rt>981</rt></ruby></a></td>
 	<td align=center valign=top style="background:#CCE673;"><a href="kk/誘.html"><ruby>誘<rt>982</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BB73;"><a href="kk/稽.html"><ruby>稽<rt>983</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C473;"><a href="kk/穀.html"><ruby>穀<rt>984</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6DD73;"><a href="kk/菌.html"><ruby>菌<rt>985</rt></ruby></a></td>
 	<td align=center valign=top style="background:#BEE673;"><a href="kk/萎.html"><ruby>萎<rt>986</rt></ruby></a></td>
 	<td align=center valign=top style="background:#73E6DF;"><a href="kk/米.html"><ruby>米<rt>987</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6B673;"><a href="kk/粉.html"><ruby>粉<rt>988</rt></ruby></a></td>
+	<td align=center valign=top style="background:#BEE673;"><a href="kk/粉.html"><ruby>粉<rt>988</rt></ruby></a></td>
 	<td align=center valign=top style="background:#DEE673;"><a href="kk/粘.html"><ruby>粘<rt>989</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6A373;"><a href="kk/粒.html"><ruby>粒<rt>990</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6B173;"><a href="kk/粒.html"><ruby>粒<rt>990</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BF73;"><a href="kk/粧.html"><ruby>粧<rt>991</rt></ruby></a></td>
 	<td align=center valign=top style="background:#DBE673;"><a href="kk/迷.html"><ruby>迷<rt>992</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6C873;"><a href="kk/粋.html"><ruby>粋<rt>993</rt></ruby></a></td>
+	<td align=center valign=top style="background:#D0E673;"><a href="kk/粋.html"><ruby>粋<rt>993</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6D973;"><a href="kk/謎.html"><ruby>謎<rt>994</rt></ruby></a></td>
 	<td align=center valign=top style="background:#D3E673;"><a href="kk/糧.html"><ruby>糧<rt>995</rt></ruby></a></td>
 	<td align=center valign=top style="background:#DBE673;"><a href="kk/菊.html"><ruby>菊<rt>996</rt></ruby></a></td>
@@ -1046,7 +1186,7 @@
 	<td align=center valign=top style="background:#E6B173;"><a href="kk/類.html"><ruby>類<rt>1000</rt></ruby></a></td>
 </tr>
 <tr>
-	<td align=center valign=top style="background:#E6BB73;"><a href="kk/漆.html"><ruby>漆<rt>1001</rt></ruby></a></td>
+	<td align=center valign=top style="background:#DEE673;"><a href="kk/漆.html"><ruby>漆<rt>1001</rt></ruby></a></td>
 	<td align=center valign=top style="background:#DEE673;"><a href="kk/膝.html"><ruby>膝<rt>1002</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BB73;"><a href="kk/様.html"><ruby>様<rt>1003</rt></ruby></a></td>
 	<td align=center valign=top style="background:#D3E673;"><a href="kk/求.html"><ruby>求<rt>1004</rt></ruby></a></td>
@@ -1071,14 +1211,14 @@
 	<td align=center valign=top style="background:#73A0E6;"><a href="kk/人.html"><ruby>人<rt>1023</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C473;"><a href="kk/佐.html"><ruby>佐<rt>1024</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BF73;"><a href="kk/侶.html"><ruby>侶<rt>1025</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6C873;"><a href="kk/但.html"><ruby>但<rt>1026</rt></ruby></a></td>
+	<td align=center valign=top style="background:#C8E673;"><a href="kk/但.html"><ruby>但<rt>1026</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C473;"><a href="kk/住.html"><ruby>住<rt>1027</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E67E73;"><a href="kk/位.html"><ruby>位<rt>1028</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69E73;"><a href="kk/位.html"><ruby>位<rt>1028</rt></ruby></a></td>
 	<td align=center valign=top style="background:#C5E673;"><a href="kk/仲.html"><ruby>仲<rt>1029</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6E273;"><a href="kk/体.html"><ruby>体<rt>1030</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6B673;"><a href="kk/悠.html"><ruby>悠<rt>1031</rt></ruby></a></td>
+	<td align=center valign=top style="background:#D3E673;"><a href="kk/悠.html"><ruby>悠<rt>1031</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C473;"><a href="kk/件.html"><ruby>件<rt>1032</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6BB73;"><a href="kk/仕.html"><ruby>仕<rt>1033</rt></ruby></a></td>
+	<td align=center valign=top style="background:#DBE673;"><a href="kk/仕.html"><ruby>仕<rt>1033</rt></ruby></a></td>
 	<td align=center valign=top style="background:#8DE673;"><a href="kk/他.html"><ruby>他<rt>1034</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B673;"><a href="kk/伏.html"><ruby>伏<rt>1035</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C473;"><a href="kk/伝.html"><ruby>伝<rt>1036</rt></ruby></a></td>
@@ -1086,13 +1226,13 @@
 	<td align=center valign=top style="background:#A1E673;"><a href="kk/休.html"><ruby>休<rt>1038</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C473;"><a href="kk/仮.html"><ruby>仮<rt>1039</rt></ruby></a></td>
 	<td align=center valign=top style="background:#D7E673;"><a href="kk/伎.html"><ruby>伎<rt>1040</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6B173;"><a href="kk/伯.html"><ruby>伯<rt>1041</rt></ruby></a></td>
+	<td align=center valign=top style="background:#DBE673;"><a href="kk/伯.html"><ruby>伯<rt>1041</rt></ruby></a></td>
 	<td align=center valign=top style="background:#C5E673;"><a href="kk/俗.html"><ruby>俗<rt>1042</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69E73;"><a href="kk/信.html"><ruby>信<rt>1043</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B673;"><a href="kk/佳.html"><ruby>佳<rt>1044</rt></ruby></a></td>
 	<td align=center valign=top style="background:#D7E673;"><a href="kk/依.html"><ruby>依<rt>1045</rt></ruby></a></td>
 	<td align=center valign=top style="background:#C5E673;"><a href="kk/例.html"><ruby>例<rt>1046</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6BF73;"><a href="kk/個.html"><ruby>個<rt>1047</rt></ruby></a></td>
+	<td align=center valign=top style="background:#DEE673;"><a href="kk/個.html"><ruby>個<rt>1047</rt></ruby></a></td>
 	<td align=center valign=top style="background:#C5E673;"><a href="kk/健.html"><ruby>健<rt>1048</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C873;"><a href="kk/側.html"><ruby>側<rt>1049</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BF73;"><a href="kk/侍.html"><ruby>侍<rt>1050</rt></ruby></a></td>
@@ -1104,7 +1244,7 @@
 	<td align=center valign=top style="background:#E6A373;"><a href="kk/傲.html"><ruby>傲<rt>1054</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B673;"><a href="kk/倒.html"><ruby>倒<rt>1055</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C873;"><a href="kk/偵.html"><ruby>偵<rt>1056</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6AD73;"><a href="kk/僧.html"><ruby>僧<rt>1057</rt></ruby></a></td>
+	<td align=center valign=top style="background:#DEE673;"><a href="kk/僧.html"><ruby>僧<rt>1057</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BF73;"><a href="kk/億.html"><ruby>億<rt>1058</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C873;"><a href="kk/儀.html"><ruby>儀<rt>1059</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BF73;"><a href="kk/償.html"><ruby>償<rt>1060</rt></ruby></a></td>
@@ -1116,17 +1256,17 @@
 	<td align=center valign=top style="background:#DBE673;"><a href="kk/便.html"><ruby>便<rt>1066</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B673;"><a href="kk/倍.html"><ruby>倍<rt>1067</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B673;"><a href="kk/優.html"><ruby>優<rt>1068</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6BB73;"><a href="kk/伐.html"><ruby>伐<rt>1069</rt></ruby></a></td>
+	<td align=center valign=top style="background:#D0E673;"><a href="kk/伐.html"><ruby>伐<rt>1069</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6D173;"><a href="kk/宿.html"><ruby>宿<rt>1070</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6AD73;"><a href="kk/傷.html"><ruby>傷<rt>1071</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6B673;"><a href="kk/保.html"><ruby>保<rt>1072</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6C873;"><a href="kk/褒.html"><ruby>褒<rt>1073</rt></ruby></a></td>
+	<td align=center valign=top style="background:#C1E673;"><a href="kk/保.html"><ruby>保<rt>1072</rt></ruby></a></td>
+	<td align=center valign=top style="background:#D0E673;"><a href="kk/褒.html"><ruby>褒<rt>1073</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B673;"><a href="kk/傑.html"><ruby>傑<rt>1074</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BB73;"><a href="kk/付.html"><ruby>付<rt>1075</rt></ruby></a></td>
 	<td align=center valign=top style="background:#D0E673;"><a href="kk/符.html"><ruby>符<rt>1076</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C873;"><a href="kk/府.html"><ruby>府<rt>1077</rt></ruby></a></td>
 	<td align=center valign=top style="background:#CCE673;"><a href="kk/任.html"><ruby>任<rt>1078</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E67E73;"><a href="kk/賃.html"><ruby>賃<rt>1079</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69473;"><a href="kk/賃.html"><ruby>賃<rt>1079</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C873;"><a href="kk/代.html"><ruby>代<rt>1080</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C473;"><a href="kk/袋.html"><ruby>袋<rt>1081</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BB73;"><a href="kk/貸.html"><ruby>貸<rt>1082</rt></ruby></a></td>
@@ -1134,7 +1274,7 @@
 	<td align=center valign=top style="background:#73E6C7;"><a href="kk/花.html"><ruby>花<rt>1084</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BB73;"><a href="kk/貨.html"><ruby>貨<rt>1085</rt></ruby></a></td>
 	<td align=center valign=top style="background:#BEE673;"><a href="kk/傾.html"><ruby>傾<rt>1086</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6C473;"><a href="kk/何.html"><ruby>何<rt>1087</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E2E673;"><a href="kk/何.html"><ruby>何<rt>1087</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B673;"><a href="kk/荷.html"><ruby>荷<rt>1088</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6AD73;"><a href="kk/俊.html"><ruby>俊<rt>1089</rt></ruby></a></td>
 	<td align=center valign=top style="background:#C1E673;"><a href="kk/傍.html"><ruby>傍<rt>1090</rt></ruby></a></td>
@@ -1142,9 +1282,9 @@
 	<td align=center valign=top style="background:#85E673;"><a href="kk/久.html"><ruby>久<rt>1092</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B173;"><a href="kk/畝.html"><ruby>畝<rt>1093</rt></ruby></a></td>
 	<td align=center valign=top style="background:#C5E673;"><a href="kk/囚.html"><ruby>囚<rt>1094</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6AD73;"><a href="kk/内.html"><ruby>内<rt>1095</rt></ruby></a></td>
+	<td align=center valign=top style="background:#CCE673;"><a href="kk/内.html"><ruby>内<rt>1095</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C473;"><a href="kk/丙.html"><ruby>丙<rt>1096</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6AD73;"><a href="kk/柄.html"><ruby>柄<rt>1097</rt></ruby></a></td>
+	<td align=center valign=top style="background:#D7E673;"><a href="kk/柄.html"><ruby>柄<rt>1097</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C873;"><a href="kk/肉.html"><ruby>肉<rt>1098</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E2E673;"><a href="kk/腐.html"><ruby>腐<rt>1099</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6A373;"><a href="kk/座.html"><ruby>座<rt>1100</rt></ruby></a></td>
@@ -1159,19 +1299,19 @@
 	<td align=center valign=top style="background:#E6C873;"><a href="kk/併.html"><ruby>併<rt>1107</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B673;"><a href="kk/瓦.html"><ruby>瓦<rt>1108</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C473;"><a href="kk/瓶.html"><ruby>瓶<rt>1109</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6C473;"><a href="kk/宮.html"><ruby>宮<rt>1110</rt></ruby></a></td>
+	<td align=center valign=top style="background:#DEE673;"><a href="kk/宮.html"><ruby>宮<rt>1110</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BF73;"><a href="kk/営.html"><ruby>営<rt>1111</rt></ruby></a></td>
 	<td align=center valign=top style="background:#D7E673;"><a href="kk/善.html"><ruby>善<rt>1112</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68E73;"><a href="kk/膳.html"><ruby>膳<rt>1113</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6C873;"><a href="kk/膳.html"><ruby>膳<rt>1113</rt></ruby></a></td>
 	<td align=center valign=top style="background:#96E673;"><a href="kk/年.html"><ruby>年<rt>1114</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C473;"><a href="kk/夜.html"><ruby>夜<rt>1115</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6BB73;"><a href="kk/液.html"><ruby>液<rt>1116</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6C473;"><a href="kk/塚.html"><ruby>塚<rt>1117</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6AD73;"><a href="kk/幣.html"><ruby>幣<rt>1118</rt></ruby></a></td>
+	<td align=center valign=top style="background:#DBE673;"><a href="kk/液.html"><ruby>液<rt>1116</rt></ruby></a></td>
+	<td align=center valign=top style="background:#CCE673;"><a href="kk/塚.html"><ruby>塚<rt>1117</rt></ruby></a></td>
+	<td align=center valign=top style="background:#CCE673;"><a href="kk/幣.html"><ruby>幣<rt>1118</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6A373;"><a href="kk/蔽.html"><ruby>蔽<rt>1119</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BF73;"><a href="kk/弊.html"><ruby>弊<rt>1120</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BF73;"><a href="kk/喚.html"><ruby>喚<rt>1121</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6B173;"><a href="kk/換.html"><ruby>換<rt>1122</rt></ruby></a></td>
+	<td align=center valign=top style="background:#C5E673;"><a href="kk/換.html"><ruby>換<rt>1122</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C873;"><a href="kk/融.html"><ruby>融<rt>1123</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6AD73;"><a href="kk/施.html"><ruby>施<rt>1124</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B673;"><a href="kk/旋.html"><ruby>旋<rt>1125</rt></ruby></a></td>
@@ -1179,9 +1319,9 @@
 	<td align=center valign=top style="background:#D3E673;"><a href="kk/旅.html"><ruby>旅<rt>1127</rt></ruby></a></td>
 	<td align=center valign=top style="background:#C5E673;"><a href="kk/勿.html"><ruby>勿<rt>1128</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6D173;"><a href="kk/物.html"><ruby>物<rt>1129</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6B173;"><a href="kk/易.html"><ruby>易<rt>1130</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6AD73;"><a href="kk/賜.html"><ruby>賜<rt>1131</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6B673;"><a href="kk/尿.html"><ruby>尿<rt>1132</rt></ruby></a></td>
+	<td align=center valign=top style="background:#C1E673;"><a href="kk/易.html"><ruby>易<rt>1130</rt></ruby></a></td>
+	<td align=center valign=top style="background:#D0E673;"><a href="kk/賜.html"><ruby>賜<rt>1131</rt></ruby></a></td>
+	<td align=center valign=top style="background:#D7E673;"><a href="kk/尿.html"><ruby>尿<rt>1132</rt></ruby></a></td>
 	<td align=center valign=top style="background:#BEE673;"><a href="kk/尼.html"><ruby>尼<rt>1133</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6D973;"><a href="kk/尻.html"><ruby>尻<rt>1134</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BB73;"><a href="kk/泥.html"><ruby>泥<rt>1135</rt></ruby></a></td>
@@ -1191,21 +1331,21 @@
 	<td align=center valign=top style="background:#E6B673;"><a href="kk/握.html"><ruby>握<rt>1139</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B673;"><a href="kk/屈.html"><ruby>屈<rt>1140</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BF73;"><a href="kk/掘.html"><ruby>掘<rt>1141</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E69473;"><a href="kk/堀.html"><ruby>堀<rt>1142</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6C473;"><a href="kk/居.html"><ruby>居<rt>1143</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6AD73;"><a href="kk/据.html"><ruby>据<rt>1144</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E67E73;"><a href="kk/堀.html"><ruby>堀<rt>1142</rt></ruby></a></td>
+	<td align=center valign=top style="background:#C5E673;"><a href="kk/居.html"><ruby>居<rt>1143</rt></ruby></a></td>
+	<td align=center valign=top style="background:#C8E673;"><a href="kk/据.html"><ruby>据<rt>1144</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69473;"><a href="kk/裾.html"><ruby>裾<rt>1145</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C473;"><a href="kk/層.html"><ruby>層<rt>1146</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BB73;"><a href="kk/局.html"><ruby>局<rt>1147</rt></ruby></a></td>
 	<td align=center valign=top style="background:#D0E673;"><a href="kk/遅.html"><ruby>遅<rt>1148</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6B173;"><a href="kk/漏.html"><ruby>漏<rt>1149</rt></ruby></a></td>
+	<td align=center valign=top style="background:#CCE673;"><a href="kk/漏.html"><ruby>漏<rt>1149</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C873;"><a href="kk/刷.html"><ruby>刷<rt>1150</rt></ruby></a></td>
 </tr>
 <tr>
 	<td align=center valign=top style="background:#E6BB73;"><a href="kk/尺.html"><ruby>尺<rt>1151</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6AD73;"><a href="kk/尽.html"><ruby>尽<rt>1152</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6C873;"><a href="kk/尽.html"><ruby>尽<rt>1152</rt></ruby></a></td>
 	<td align=center valign=top style="background:#D3E673;"><a href="kk/沢.html"><ruby>沢<rt>1153</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6BB73;"><a href="kk/訳.html"><ruby>訳<rt>1154</rt></ruby></a></td>
+	<td align=center valign=top style="background:#99E673;"><a href="kk/訳.html"><ruby>訳<rt>1154</rt></ruby></a></td>
 	<td align=center valign=top style="background:#90E673;"><a href="kk/択.html"><ruby>択<rt>1155</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69473;"><a href="kk/昼.html"><ruby>昼<rt>1156</rt></ruby></a></td>
 	<td align=center valign=top style="background:#73E6D2;"><a href="kk/戸.html"><ruby>戸<rt>1157</rt></ruby></a></td>
@@ -1221,8 +1361,8 @@
 	<td align=center valign=top style="background:#E6D173;"><a href="kk/示.html"><ruby>示<rt>1167</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BF73;"><a href="kk/礼.html"><ruby>礼<rt>1168</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C473;"><a href="kk/祥.html"><ruby>祥<rt>1169</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6BF73;"><a href="kk/祝.html"><ruby>祝<rt>1170</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6B173;"><a href="kk/福.html"><ruby>福<rt>1171</rt></ruby></a></td>
+	<td align=center valign=top style="background:#BEE673;"><a href="kk/祝.html"><ruby>祝<rt>1170</rt></ruby></a></td>
+	<td align=center valign=top style="background:#DBE673;"><a href="kk/福.html"><ruby>福<rt>1171</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6AD73;"><a href="kk/祉.html"><ruby>祉<rt>1172</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6AD73;"><a href="kk/社.html"><ruby>社<rt>1173</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C873;"><a href="kk/視.html"><ruby>視<rt>1174</rt></ruby></a></td>
@@ -1261,11 +1401,11 @@
 	<td align=center valign=top style="background:#E6BB73;"><a href="kk/裸.html"><ruby>裸<rt>1205</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6D973;"><a href="kk/斤.html"><ruby>斤<rt>1206</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6E273;"><a href="kk/析.html"><ruby>析<rt>1207</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6AD73;"><a href="kk/所.html"><ruby>所<rt>1208</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6B173;"><a href="kk/祈.html"><ruby>祈<rt>1209</rt></ruby></a></td>
+	<td align=center valign=top style="background:#D0E673;"><a href="kk/所.html"><ruby>所<rt>1208</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6A373;"><a href="kk/祈.html"><ruby>祈<rt>1209</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B673;"><a href="kk/近.html"><ruby>近<rt>1210</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E2E673;"><a href="kk/折.html"><ruby>折<rt>1211</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6B173;"><a href="kk/哲.html"><ruby>哲<rt>1212</rt></ruby></a></td>
+	<td align=center valign=top style="background:#99E673;"><a href="kk/哲.html"><ruby>哲<rt>1212</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6AD73;"><a href="kk/逝.html"><ruby>逝<rt>1213</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C873;"><a href="kk/誓.html"><ruby>誓<rt>1214</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6AD73;"><a href="kk/斬.html"><ruby>斬<rt>1215</rt></ruby></a></td>
@@ -1297,9 +1437,9 @@
 	<td align=center valign=top style="background:#E6BB73;"><a href="kk/唐.html"><ruby>唐<rt>1241</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B173;"><a href="kk/糖.html"><ruby>糖<rt>1242</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C873;"><a href="kk/康.html"><ruby>康<rt>1243</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68473;"><a href="kk/逮.html"><ruby>逮<rt>1244</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69973;"><a href="kk/逮.html"><ruby>逮<rt>1244</rt></ruby></a></td>
 	<td align=center valign=top style="background:#85E673;"><a href="kk/伊.html"><ruby>伊<rt>1245</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6AD73;"><a href="kk/君.html"><ruby>君<rt>1246</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E67E73;"><a href="kk/君.html"><ruby>君<rt>1246</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B173;"><a href="kk/群.html"><ruby>群<rt>1247</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6E273;"><a href="kk/耐.html"><ruby>耐<rt>1248</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C873;"><a href="kk/需.html"><ruby>需<rt>1249</rt></ruby></a></td>
@@ -1307,7 +1447,7 @@
 </tr>
 <tr>
 	<td align=center valign=top style="background:#E6C873;"><a href="kk/端.html"><ruby>端<rt>1251</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6B173;"><a href="kk/両.html"><ruby>両<rt>1252</rt></ruby></a></td>
+	<td align=center valign=top style="background:#A1E673;"><a href="kk/両.html"><ruby>両<rt>1252</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6A873;"><a href="kk/満.html"><ruby>満<rt>1253</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C873;"><a href="kk/画.html"><ruby>画<rt>1254</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6D173;"><a href="kk/歯.html"><ruby>歯<rt>1255</rt></ruby></a></td>
@@ -1320,7 +1460,7 @@
 	<td align=center valign=top style="background:#E6B173;"><a href="kk/料.html"><ruby>料<rt>1262</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6AD73;"><a href="kk/科.html"><ruby>科<rt>1263</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C473;"><a href="kk/図.html"><ruby>図<rt>1264</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6B173;"><a href="kk/用.html"><ruby>用<rt>1265</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69E73;"><a href="kk/用.html"><ruby>用<rt>1265</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BF73;"><a href="kk/庸.html"><ruby>庸<rt>1266</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B673;"><a href="kk/備.html"><ruby>備<rt>1267</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B173;"><a href="kk/昔.html"><ruby>昔<rt>1268</rt></ruby></a></td>
@@ -1330,7 +1470,7 @@
 	<td align=center valign=top style="background:#E6AD73;"><a href="kk/措.html"><ruby>措<rt>1272</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BF73;"><a href="kk/散.html"><ruby>散<rt>1273</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6D573;"><a href="kk/廿.html"><ruby>廿<rt>1274</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6AD73;"><a href="kk/庶.html"><ruby>庶<rt>1275</rt></ruby></a></td>
+	<td align=center valign=top style="background:#DEE673;"><a href="kk/庶.html"><ruby>庶<rt>1275</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B173;"><a href="kk/遮.html"><ruby>遮<rt>1276</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BF73;"><a href="kk/席.html"><ruby>席<rt>1277</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B673;"><a href="kk/度.html"><ruby>度<rt>1278</rt></ruby></a></td>
@@ -1416,7 +1556,7 @@
 	<td align=center valign=top style="background:#E68E73;"><a href="kk/賭.html"><ruby>賭<rt>1354</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C873;"><a href="kk/峡.html"><ruby>峡<rt>1355</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B173;"><a href="kk/狭.html"><ruby>狭<rt>1356</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68473;"><a href="kk/挟.html"><ruby>挟<rt>1357</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69973;"><a href="kk/挟.html"><ruby>挟<rt>1357</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C873;"><a href="kk/頬.html"><ruby>頬<rt>1358</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C473;"><a href="kk/追.html"><ruby>追<rt>1359</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6AD73;"><a href="kk/阜.html"><ruby>阜<rt>1360</rt></ruby></a></td>
@@ -1431,7 +1571,7 @@
 	<td align=center valign=top style="background:#E6AD73;"><a href="kk/効.html"><ruby>効<rt>1369</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BF73;"><a href="kk/較.html"><ruby>較<rt>1370</rt></ruby></a></td>
 	<td align=center valign=top style="background:#73E6A0;"><a href="kk/校.html"><ruby>校<rt>1371</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6B173;"><a href="kk/足.html"><ruby>足<rt>1372</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6E273;"><a href="kk/足.html"><ruby>足<rt>1372</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6D173;"><a href="kk/促.html"><ruby>促<rt>1373</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C473;"><a href="kk/捉.html"><ruby>捉<rt>1374</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B673;"><a href="kk/距.html"><ruby>距<rt>1375</rt></ruby></a></td>
@@ -1481,7 +1621,7 @@
 	<td align=center valign=top style="background:#E6E273;"><a href="kk/究.html"><ruby>究<rt>1417</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B173;"><a href="kk/窒.html"><ruby>窒<rt>1418</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C873;"><a href="kk/窃.html"><ruby>窃<rt>1419</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E69473;"><a href="kk/窟.html"><ruby>窟<rt>1420</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6BB73;"><a href="kk/窟.html"><ruby>窟<rt>1420</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BB73;"><a href="kk/窪.html"><ruby>窪<rt>1421</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69473;"><a href="kk/搾.html"><ruby>搾<rt>1422</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BF73;"><a href="kk/窯.html"><ruby>窯<rt>1423</rt></ruby></a></td>
@@ -1496,7 +1636,7 @@
 	<td align=center valign=top style="background:#E6C473;"><a href="kk/織.html"><ruby>織<rt>1432</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6AD73;"><a href="kk/繕.html"><ruby>繕<rt>1433</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6E273;"><a href="kk/縮.html"><ruby>縮<rt>1434</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E69973;"><a href="kk/繁.html"><ruby>繁<rt>1435</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6C873;"><a href="kk/繁.html"><ruby>繁<rt>1435</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6AD73;"><a href="kk/縦.html"><ruby>縦<rt>1436</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B173;"><a href="kk/緻.html"><ruby>緻<rt>1437</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6AD73;"><a href="kk/線.html"><ruby>線<rt>1438</rt></ruby></a></td>
@@ -1517,11 +1657,11 @@
 	<td align=center valign=top style="background:#E6CD73;"><a href="kk/結.html"><ruby>結<rt>1451</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6A873;"><a href="kk/終.html"><ruby>終<rt>1452</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B673;"><a href="kk/級.html"><ruby>級<rt>1453</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6B173;"><a href="kk/紀.html"><ruby>紀<rt>1454</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6D973;"><a href="kk/紀.html"><ruby>紀<rt>1454</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B673;"><a href="kk/紅.html"><ruby>紅<rt>1455</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BF73;"><a href="kk/納.html"><ruby>納<rt>1456</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C873;"><a href="kk/紡.html"><ruby>紡<rt>1457</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68973;"><a href="kk/紛.html"><ruby>紛<rt>1458</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69973;"><a href="kk/紛.html"><ruby>紛<rt>1458</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6AD73;"><a href="kk/紹.html"><ruby>紹<rt>1459</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6AD73;"><a href="kk/経.html"><ruby>経<rt>1460</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6CD73;"><a href="kk/紳.html"><ruby>紳<rt>1461</rt></ruby></a></td>
@@ -1533,7 +1673,7 @@
 	<td align=center valign=top style="background:#E6B173;"><a href="kk/綿.html"><ruby>綿<rt>1467</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BB73;"><a href="kk/絹.html"><ruby>絹<rt>1468</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BF73;"><a href="kk/繰.html"><ruby>繰<rt>1469</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E67873;"><a href="kk/継.html"><ruby>継<rt>1470</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69E73;"><a href="kk/継.html"><ruby>継<rt>1470</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6D573;"><a href="kk/緑.html"><ruby>緑<rt>1471</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69E73;"><a href="kk/縁.html"><ruby>縁<rt>1472</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C473;"><a href="kk/網.html"><ruby>網<rt>1473</rt></ruby></a></td>
@@ -1551,10 +1691,10 @@
 	<td align=center valign=top style="background:#E6BB73;"><a href="kk/畜.html"><ruby>畜<rt>1485</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C473;"><a href="kk/蓄.html"><ruby>蓄<rt>1486</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6DD73;"><a href="kk/弦.html"><ruby>弦<rt>1487</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68E73;"><a href="kk/擁.html"><ruby>擁<rt>1488</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6BB73;"><a href="kk/擁.html"><ruby>擁<rt>1488</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BF73;"><a href="kk/滋.html"><ruby>滋<rt>1489</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B673;"><a href="kk/慈.html"><ruby>慈<rt>1490</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6B173;"><a href="kk/磁.html"><ruby>磁<rt>1491</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6C473;"><a href="kk/磁.html"><ruby>磁<rt>1491</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C473;"><a href="kk/系.html"><ruby>系<rt>1492</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6D573;"><a href="kk/係.html"><ruby>係<rt>1493</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B173;"><a href="kk/孫.html"><ruby>孫<rt>1494</rt></ruby></a></td>
@@ -1563,7 +1703,7 @@
 	<td align=center valign=top style="background:#E68973;"><a href="kk/却.html"><ruby>却<rt>1497</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B173;"><a href="kk/脚.html"><ruby>脚<rt>1498</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B673;"><a href="kk/卸.html"><ruby>卸<rt>1499</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E67E73;"><a href="kk/御.html"><ruby>御<rt>1500</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69973;"><a href="kk/御.html"><ruby>御<rt>1500</rt></ruby></a></td>
 </tr>
 <tr>
 	<td align=center valign=top style="background:#E6B173;"><a href="kk/服.html"><ruby>服<rt>1501</rt></ruby></a></td>
@@ -1580,7 +1720,7 @@
 	<td align=center valign=top style="background:#E6C473;"><a href="kk/踊.html"><ruby>踊<rt>1512</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C473;"><a href="kk/疑.html"><ruby>疑<rt>1513</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B173;"><a href="kk/擬.html"><ruby>擬<rt>1514</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E69E73;"><a href="kk/凝.html"><ruby>凝<rt>1515</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6BB73;"><a href="kk/凝.html"><ruby>凝<rt>1515</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BB73;"><a href="kk/範.html"><ruby>範<rt>1516</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B173;"><a href="kk/犯.html"><ruby>犯<rt>1517</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B673;"><a href="kk/氾.html"><ruby>氾<rt>1518</rt></ruby></a></td>
@@ -1590,17 +1730,17 @@
 	<td align=center valign=top style="background:#E6C473;"><a href="kk/腕.html"><ruby>腕<rt>1522</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BF73;"><a href="kk/苑.html"><ruby>苑<rt>1523</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C873;"><a href="kk/怨.html"><ruby>怨<rt>1524</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E69E73;"><a href="kk/柳.html"><ruby>柳<rt>1525</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6B673;"><a href="kk/柳.html"><ruby>柳<rt>1525</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BF73;"><a href="kk/卵.html"><ruby>卵<rt>1526</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C473;"><a href="kk/留.html"><ruby>留<rt>1527</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B673;"><a href="kk/瑠.html"><ruby>瑠<rt>1528</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BF73;"><a href="kk/貿.html"><ruby>貿<rt>1529</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6A373;"><a href="kk/印.html"><ruby>印<rt>1530</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6B673;"><a href="kk/印.html"><ruby>印<rt>1530</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6AD73;"><a href="kk/臼.html"><ruby>臼<rt>1531</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C873;"><a href="kk/毀.html"><ruby>毀<rt>1532</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BF73;"><a href="kk/興.html"><ruby>興<rt>1533</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B173;"><a href="kk/酉.html"><ruby>酉<rt>1534</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6A873;"><a href="kk/酒.html"><ruby>酒<rt>1535</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6E273;"><a href="kk/酒.html"><ruby>酒<rt>1535</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BB73;"><a href="kk/酌.html"><ruby>酌<rt>1536</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6AD73;"><a href="kk/酎.html"><ruby>酎<rt>1537</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BB73;"><a href="kk/酵.html"><ruby>酵<rt>1538</rt></ruby></a></td>
@@ -1608,7 +1748,7 @@
 	<td align=center valign=top style="background:#E6AD73;"><a href="kk/酬.html"><ruby>酬<rt>1540</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BB73;"><a href="kk/酪.html"><ruby>酪<rt>1541</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BF73;"><a href="kk/酢.html"><ruby>酢<rt>1542</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6A373;"><a href="kk/酔.html"><ruby>酔<rt>1543</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6E273;"><a href="kk/酔.html"><ruby>酔<rt>1543</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B673;"><a href="kk/配.html"><ruby>配<rt>1544</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C473;"><a href="kk/酸.html"><ruby>酸<rt>1545</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69E73;"><a href="kk/猶.html"><ruby>猶<rt>1546</rt></ruby></a></td>
@@ -1626,18 +1766,18 @@
 	<td align=center valign=top style="background:#E6C873;"><a href="kk/血.html"><ruby>血<rt>1556</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6D573;"><a href="kk/盆.html"><ruby>盆<rt>1557</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BB73;"><a href="kk/盟.html"><ruby>盟<rt>1558</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68E73;"><a href="kk/盗.html"><ruby>盗<rt>1559</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6A373;"><a href="kk/温.html"><ruby>温<rt>1560</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6C473;"><a href="kk/盗.html"><ruby>盗<rt>1559</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6BB73;"><a href="kk/温.html"><ruby>温<rt>1560</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69473;"><a href="kk/蓋.html"><ruby>蓋<rt>1561</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6AD73;"><a href="kk/監.html"><ruby>監<rt>1562</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C873;"><a href="kk/濫.html"><ruby>濫<rt>1563</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6A373;"><a href="kk/鑑.html"><ruby>鑑<rt>1564</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E67873;"><a href="kk/鑑.html"><ruby>鑑<rt>1564</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BB73;"><a href="kk/藍.html"><ruby>藍<rt>1565</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B173;"><a href="kk/猛.html"><ruby>猛<rt>1566</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E69E73;"><a href="kk/盛.html"><ruby>盛<rt>1567</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6E673;"><a href="kk/盛.html"><ruby>盛<rt>1567</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C873;"><a href="kk/塩.html"><ruby>塩<rt>1568</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6A373;"><a href="kk/銀.html"><ruby>銀<rt>1569</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6A373;"><a href="kk/恨.html"><ruby>恨<rt>1570</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6B673;"><a href="kk/恨.html"><ruby>恨<rt>1570</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B173;"><a href="kk/根.html"><ruby>根<rt>1571</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B673;"><a href="kk/即.html"><ruby>即<rt>1572</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B173;"><a href="kk/爵.html"><ruby>爵<rt>1573</rt></ruby></a></td>
@@ -1646,130 +1786,130 @@
 	<td align=center valign=top style="background:#E6A373;"><a href="kk/限.html"><ruby>限<rt>1576</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BF73;"><a href="kk/眼.html"><ruby>眼<rt>1577</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6AD73;"><a href="kk/良.html"><ruby>良<rt>1578</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E67E73;"><a href="kk/朗.html"><ruby>朗<rt>1579</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69E73;"><a href="kk/朗.html"><ruby>朗<rt>1579</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B673;"><a href="kk/浪.html"><ruby>浪<rt>1580</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6AD73;"><a href="kk/娘.html"><ruby>娘<rt>1581</rt></ruby></a></td>
 	<td align=center valign=top style="background:#73E69C;"><a href="kk/食.html"><ruby>食<rt>1582</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C873;"><a href="kk/飯.html"><ruby>飯<rt>1583</rt></ruby></a></td>
 	<td align=center valign=top style="background:#DBE673;"><a href="kk/飲.html"><ruby>飲<rt>1584</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B173;"><a href="kk/飢.html"><ruby>飢<rt>1585</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6A373;"><a href="kk/餓.html"><ruby>餓<rt>1586</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E69E73;"><a href="kk/飾.html"><ruby>飾<rt>1587</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6C873;"><a href="kk/餓.html"><ruby>餓<rt>1586</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6C873;"><a href="kk/飾.html"><ruby>飾<rt>1587</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69E73;"><a href="kk/餌.html"><ruby>餌<rt>1588</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6A373;"><a href="kk/館.html"><ruby>館<rt>1589</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6B173;"><a href="kk/館.html"><ruby>館<rt>1589</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6A873;"><a href="kk/餅.html"><ruby>餅<rt>1590</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E68E73;"><a href="kk/養.html"><ruby>養<rt>1591</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B173;"><a href="kk/飽.html"><ruby>飽<rt>1592</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6AD73;"><a href="kk/既.html"><ruby>既<rt>1593</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E69973;"><a href="kk/概.html"><ruby>概<rt>1594</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6BB73;"><a href="kk/概.html"><ruby>概<rt>1594</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6AD73;"><a href="kk/慨.html"><ruby>慨<rt>1595</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6AD73;"><a href="kk/平.html"><ruby>平<rt>1596</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BF73;"><a href="kk/呼.html"><ruby>呼<rt>1597</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69E73;"><a href="kk/坪.html"><ruby>坪<rt>1598</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E69E73;"><a href="kk/評.html"><ruby>評<rt>1599</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E69E73;"><a href="kk/刈.html"><ruby>刈<rt>1600</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6AD73;"><a href="kk/評.html"><ruby>評<rt>1599</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6BF73;"><a href="kk/刈.html"><ruby>刈<rt>1600</rt></ruby></a></td>
 </tr>
 <tr>
 	<td align=center valign=top style="background:#E6C873;"><a href="kk/刹.html"><ruby>刹<rt>1601</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69973;"><a href="kk/希.html"><ruby>希<rt>1602</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6AD73;"><a href="kk/凶.html"><ruby>凶<rt>1603</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E69973;"><a href="kk/胸.html"><ruby>胸<rt>1604</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E69973;"><a href="kk/離.html"><ruby>離<rt>1605</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6B173;"><a href="kk/胸.html"><ruby>胸<rt>1604</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6AD73;"><a href="kk/離.html"><ruby>離<rt>1605</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E68E73;"><a href="kk/璃.html"><ruby>璃<rt>1606</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C473;"><a href="kk/殺.html"><ruby>殺<rt>1607</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C473;"><a href="kk/爽.html"><ruby>爽<rt>1608</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C473;"><a href="kk/純.html"><ruby>純<rt>1609</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6A373;"><a href="kk/頓.html"><ruby>頓<rt>1610</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6A373;"><a href="kk/鈍.html"><ruby>鈍<rt>1611</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6BF73;"><a href="kk/頓.html"><ruby>頓<rt>1610</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6B173;"><a href="kk/鈍.html"><ruby>鈍<rt>1611</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B173;"><a href="kk/辛.html"><ruby>辛<rt>1612</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69973;"><a href="kk/辞.html"><ruby>辞<rt>1613</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C873;"><a href="kk/梓.html"><ruby>梓<rt>1614</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C873;"><a href="kk/宰.html"><ruby>宰<rt>1615</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BF73;"><a href="kk/壁.html"><ruby>壁<rt>1616</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6A373;"><a href="kk/璧.html"><ruby>璧<rt>1617</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E68973;"><a href="kk/璧.html"><ruby>璧<rt>1617</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B673;"><a href="kk/避.html"><ruby>避<rt>1618</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6A373;"><a href="kk/新.html"><ruby>新<rt>1619</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6BB73;"><a href="kk/新.html"><ruby>新<rt>1619</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6AD73;"><a href="kk/薪.html"><ruby>薪<rt>1620</rt></ruby></a></td>
 	<td align=center valign=top style="background:#73E679;"><a href="kk/親.html"><ruby>親<rt>1621</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C873;"><a href="kk/幸.html"><ruby>幸<rt>1622</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6A373;"><a href="kk/執.html"><ruby>執<rt>1623</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BF73;"><a href="kk/摯.html"><ruby>摯<rt>1624</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B173;"><a href="kk/報.html"><ruby>報<rt>1625</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E69E73;"><a href="kk/叫.html"><ruby>叫<rt>1626</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E69973;"><a href="kk/糾.html"><ruby>糾<rt>1627</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E69973;"><a href="kk/収.html"><ruby>収<rt>1628</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6B173;"><a href="kk/叫.html"><ruby>叫<rt>1626</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6B673;"><a href="kk/糾.html"><ruby>糾<rt>1627</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6B673;"><a href="kk/収.html"><ruby>収<rt>1628</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6AD73;"><a href="kk/卑.html"><ruby>卑<rt>1629</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E69973;"><a href="kk/碑.html"><ruby>碑<rt>1630</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6BF73;"><a href="kk/碑.html"><ruby>碑<rt>1630</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C873;"><a href="kk/陸.html"><ruby>陸<rt>1631</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E69973;"><a href="kk/睦.html"><ruby>睦<rt>1632</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6BF73;"><a href="kk/睦.html"><ruby>睦<rt>1632</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69E73;"><a href="kk/勢.html"><ruby>勢<rt>1633</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69973;"><a href="kk/熱.html"><ruby>熱<rt>1634</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E69E73;"><a href="kk/菱.html"><ruby>菱<rt>1635</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E67873;"><a href="kk/菱.html"><ruby>菱<rt>1635</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BB73;"><a href="kk/陵.html"><ruby>陵<rt>1636</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69E73;"><a href="kk/亥.html"><ruby>亥<rt>1637</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69E73;"><a href="kk/核.html"><ruby>核<rt>1638</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E69E73;"><a href="kk/刻.html"><ruby>刻<rt>1639</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E69973;"><a href="kk/該.html"><ruby>該<rt>1640</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6B173;"><a href="kk/刻.html"><ruby>刻<rt>1639</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6AD73;"><a href="kk/該.html"><ruby>該<rt>1640</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6A373;"><a href="kk/骸.html"><ruby>骸<rt>1641</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69E73;"><a href="kk/劾.html"><ruby>劾<rt>1642</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E6A373;"><a href="kk/述.html"><ruby>述<rt>1643</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6BB73;"><a href="kk/述.html"><ruby>述<rt>1643</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6A373;"><a href="kk/術.html"><ruby>術<rt>1644</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69473;"><a href="kk/寒.html"><ruby>寒<rt>1645</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E69973;"><a href="kk/塞.html"><ruby>塞<rt>1646</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6C473;"><a href="kk/塞.html"><ruby>塞<rt>1646</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69E73;"><a href="kk/醸.html"><ruby>醸<rt>1647</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E69E73;"><a href="kk/譲.html"><ruby>譲<rt>1648</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6AD73;"><a href="kk/譲.html"><ruby>譲<rt>1648</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BF73;"><a href="kk/壌.html"><ruby>壌<rt>1649</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E69973;"><a href="kk/嬢.html"><ruby>嬢<rt>1650</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6BB73;"><a href="kk/嬢.html"><ruby>嬢<rt>1650</rt></ruby></a></td>
 </tr>
 <tr>
-	<td align=center valign=top style="background:#E69E73;"><a href="kk/毒.html"><ruby>毒<rt>1651</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6B173;"><a href="kk/毒.html"><ruby>毒<rt>1651</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69973;"><a href="kk/素.html"><ruby>素<rt>1652</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6C473;"><a href="kk/麦.html"><ruby>麦<rt>1653</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B173;"><a href="kk/青.html"><ruby>青<rt>1654</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69E73;"><a href="kk/精.html"><ruby>精<rt>1655</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6A373;"><a href="kk/請.html"><ruby>請<rt>1656</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E69473;"><a href="kk/情.html"><ruby>情<rt>1657</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6DD73;"><a href="kk/情.html"><ruby>情<rt>1657</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6A373;"><a href="kk/晴.html"><ruby>晴<rt>1658</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6A373;"><a href="kk/清.html"><ruby>清<rt>1659</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68E73;"><a href="kk/静.html"><ruby>静<rt>1660</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6BF73;"><a href="kk/静.html"><ruby>静<rt>1660</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69E73;"><a href="kk/責.html"><ruby>責<rt>1661</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69E73;"><a href="kk/績.html"><ruby>績<rt>1662</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69473;"><a href="kk/積.html"><ruby>積<rt>1663</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69E73;"><a href="kk/債.html"><ruby>債<rt>1664</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69973;"><a href="kk/漬.html"><ruby>漬<rt>1665</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69E73;"><a href="kk/表.html"><ruby>表<rt>1666</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E69473;"><a href="kk/俵.html"><ruby>俵<rt>1667</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6BF73;"><a href="kk/俵.html"><ruby>俵<rt>1667</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69973;"><a href="kk/潔.html"><ruby>潔<rt>1668</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68E73;"><a href="kk/契.html"><ruby>契<rt>1669</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E67873;"><a href="kk/契.html"><ruby>契<rt>1669</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69973;"><a href="kk/喫.html"><ruby>喫<rt>1670</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69E73;"><a href="kk/害.html"><ruby>害<rt>1671</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69473;"><a href="kk/轄.html"><ruby>轄<rt>1672</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6A373;"><a href="kk/割.html"><ruby>割<rt>1673</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E69473;"><a href="kk/憲.html"><ruby>憲<rt>1674</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6AD73;"><a href="kk/憲.html"><ruby>憲<rt>1674</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6A873;"><a href="kk/生.html"><ruby>生<rt>1675</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69E73;"><a href="kk/星.html"><ruby>星<rt>1676</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E69473;"><a href="kk/醒.html"><ruby>醒<rt>1677</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6BB73;"><a href="kk/醒.html"><ruby>醒<rt>1677</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B173;"><a href="kk/姓.html"><ruby>姓<rt>1678</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B173;"><a href="kk/性.html"><ruby>性<rt>1679</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69473;"><a href="kk/牲.html"><ruby>牲<rt>1680</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6A873;"><a href="kk/産.html"><ruby>産<rt>1681</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6A373;"><a href="kk/隆.html"><ruby>隆<rt>1682</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68973;"><a href="kk/峰.html"><ruby>峰<rt>1683</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E68E73;"><a href="kk/峰.html"><ruby>峰<rt>1683</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69973;"><a href="kk/蜂.html"><ruby>蜂<rt>1684</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69973;"><a href="kk/縫.html"><ruby>縫<rt>1685</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69973;"><a href="kk/拝.html"><ruby>拝<rt>1686</rt></ruby></a></td>
 	<td align=center valign=top style="background:#8BE673;"><a href="kk/寿.html"><ruby>寿<rt>1687</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69473;"><a href="kk/鋳.html"><ruby>鋳<rt>1688</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68973;"><a href="kk/籍.html"><ruby>籍<rt>1689</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69473;"><a href="kk/籍.html"><ruby>籍<rt>1689</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69973;"><a href="kk/春.html"><ruby>春<rt>1690</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69E73;"><a href="kk/椿.html"><ruby>椿<rt>1691</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6A373;"><a href="kk/泰.html"><ruby>泰<rt>1692</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E68E73;"><a href="kk/奏.html"><ruby>奏<rt>1693</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68E73;"><a href="kk/実.html"><ruby>実<rt>1694</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6C473;"><a href="kk/実.html"><ruby>実<rt>1694</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69973;"><a href="kk/奉.html"><ruby>奉<rt>1695</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68973;"><a href="kk/俸.html"><ruby>俸<rt>1696</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68E73;"><a href="kk/棒.html"><ruby>棒<rt>1697</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68E73;"><a href="kk/謹.html"><ruby>謹<rt>1698</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6A373;"><a href="kk/俸.html"><ruby>俸<rt>1696</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E67873;"><a href="kk/棒.html"><ruby>棒<rt>1697</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E67873;"><a href="kk/謹.html"><ruby>謹<rt>1698</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6A373;"><a href="kk/僅.html"><ruby>僅<rt>1699</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69E73;"><a href="kk/勤.html"><ruby>勤<rt>1700</rt></ruby></a></td>
 </tr>
@@ -1786,7 +1926,7 @@
 	<td align=center valign=top style="background:#E69E73;"><a href="kk/剰.html"><ruby>剰<rt>1710</rt></ruby></a></td>
 	<td align=center valign=top style="background:#73E6CA;"><a href="kk/今.html"><ruby>今<rt>1711</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69E73;"><a href="kk/含.html"><ruby>含<rt>1712</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68973;"><a href="kk/貪.html"><ruby>貪<rt>1713</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E67873;"><a href="kk/貪.html"><ruby>貪<rt>1713</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6A373;"><a href="kk/吟.html"><ruby>吟<rt>1714</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69973;"><a href="kk/念.html"><ruby>念<rt>1715</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69E73;"><a href="kk/捻.html"><ruby>捻<rt>1716</rt></ruby></a></td>
@@ -1806,11 +1946,11 @@
 	<td align=center valign=top style="background:#E6B173;"><a href="kk/要.html"><ruby>要<rt>1730</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E68E73;"><a href="kk/腰.html"><ruby>腰<rt>1731</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6A373;"><a href="kk/票.html"><ruby>票<rt>1732</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68E73;"><a href="kk/漂.html"><ruby>漂<rt>1733</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6C473;"><a href="kk/漂.html"><ruby>漂<rt>1733</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6A373;"><a href="kk/標.html"><ruby>標<rt>1734</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6A373;"><a href="kk/栗.html"><ruby>栗<rt>1735</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E68E73;"><a href="kk/慄.html"><ruby>慄<rt>1736</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68E73;"><a href="kk/遷.html"><ruby>遷<rt>1737</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6C873;"><a href="kk/遷.html"><ruby>遷<rt>1737</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69973;"><a href="kk/覆.html"><ruby>覆<rt>1738</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6A873;"><a href="kk/煙.html"><ruby>煙<rt>1739</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6A373;"><a href="kk/南.html"><ruby>南<rt>1740</rt></ruby></a></td>
@@ -1818,17 +1958,17 @@
 	<td align=center valign=top style="background:#E69973;"><a href="kk/献.html"><ruby>献<rt>1742</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B173;"><a href="kk/門.html"><ruby>門<rt>1743</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69E73;"><a href="kk/問.html"><ruby>問<rt>1744</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68E73;"><a href="kk/閲.html"><ruby>閲<rt>1745</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6BF73;"><a href="kk/閲.html"><ruby>閲<rt>1745</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69473;"><a href="kk/閥.html"><ruby>閥<rt>1746</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E69473;"><a href="kk/間.html"><ruby>間<rt>1747</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E67873;"><a href="kk/間.html"><ruby>間<rt>1747</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6A373;"><a href="kk/闇.html"><ruby>闇<rt>1748</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6A373;"><a href="kk/簡.html"><ruby>簡<rt>1749</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68E73;"><a href="kk/開.html"><ruby>開<rt>1750</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6B673;"><a href="kk/開.html"><ruby>開<rt>1750</rt></ruby></a></td>
 </tr>
 <tr>
 	<td align=center valign=top style="background:#E69E73;"><a href="kk/閉.html"><ruby>閉<rt>1751</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69E73;"><a href="kk/閣.html"><ruby>閣<rt>1752</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68E73;"><a href="kk/閑.html"><ruby>閑<rt>1753</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6CD73;"><a href="kk/閑.html"><ruby>閑<rt>1753</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6B173;"><a href="kk/聞.html"><ruby>聞<rt>1754</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69E73;"><a href="kk/潤.html"><ruby>潤<rt>1755</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6A373;"><a href="kk/欄.html"><ruby>欄<rt>1756</rt></ruby></a></td>
@@ -1839,7 +1979,7 @@
 	<td align=center valign=top style="background:#E68E73;"><a href="kk/俳.html"><ruby>俳<rt>1761</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69973;"><a href="kk/排.html"><ruby>排<rt>1762</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69473;"><a href="kk/悲.html"><ruby>悲<rt>1763</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68473;"><a href="kk/罪.html"><ruby>罪<rt>1764</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69E73;"><a href="kk/罪.html"><ruby>罪<rt>1764</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69473;"><a href="kk/輩.html"><ruby>輩<rt>1765</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69473;"><a href="kk/扉.html"><ruby>扉<rt>1766</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69E73;"><a href="kk/侯.html"><ruby>侯<rt>1767</rt></ruby></a></td>
@@ -1847,125 +1987,125 @@
 	<td align=center valign=top style="background:#E69973;"><a href="kk/候.html"><ruby>候<rt>1769</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69973;"><a href="kk/決.html"><ruby>決<rt>1770</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69E73;"><a href="kk/快.html"><ruby>快<rt>1771</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68E73;"><a href="kk/偉.html"><ruby>偉<rt>1772</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68E73;"><a href="kk/違.html"><ruby>違<rt>1773</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6C473;"><a href="kk/偉.html"><ruby>偉<rt>1772</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6B173;"><a href="kk/違.html"><ruby>違<rt>1773</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69473;"><a href="kk/緯.html"><ruby>緯<rt>1774</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69E73;"><a href="kk/衛.html"><ruby>衛<rt>1775</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69E73;"><a href="kk/韓.html"><ruby>韓<rt>1776</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6AD73;"><a href="kk/干.html"><ruby>干<rt>1777</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E68E73;"><a href="kk/肝.html"><ruby>肝<rt>1778</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68E73;"><a href="kk/刊.html"><ruby>刊<rt>1779</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6BF73;"><a href="kk/刊.html"><ruby>刊<rt>1779</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69E73;"><a href="kk/汗.html"><ruby>汗<rt>1780</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68E73;"><a href="kk/軒.html"><ruby>軒<rt>1781</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6B673;"><a href="kk/軒.html"><ruby>軒<rt>1781</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69973;"><a href="kk/岸.html"><ruby>岸<rt>1782</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69473;"><a href="kk/幹.html"><ruby>幹<rt>1783</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E68E73;"><a href="kk/芋.html"><ruby>芋<rt>1784</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68E73;"><a href="kk/宇.html"><ruby>宇<rt>1785</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6BF73;"><a href="kk/宇.html"><ruby>宇<rt>1785</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69473;"><a href="kk/余.html"><ruby>余<rt>1786</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68973;"><a href="kk/除.html"><ruby>除<rt>1787</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E67E73;"><a href="kk/徐.html"><ruby>徐<rt>1788</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68973;"><a href="kk/叙.html"><ruby>叙<rt>1789</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68973;"><a href="kk/途.html"><ruby>途<rt>1790</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E67873;"><a href="kk/斜.html"><ruby>斜<rt>1791</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68973;"><a href="kk/塗.html"><ruby>塗<rt>1792</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69973;"><a href="kk/除.html"><ruby>除<rt>1787</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69473;"><a href="kk/徐.html"><ruby>徐<rt>1788</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6A373;"><a href="kk/叙.html"><ruby>叙<rt>1789</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E68473;"><a href="kk/途.html"><ruby>途<rt>1790</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6A373;"><a href="kk/斜.html"><ruby>斜<rt>1791</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E68E73;"><a href="kk/塗.html"><ruby>塗<rt>1792</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69473;"><a href="kk/束.html"><ruby>束<rt>1793</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69973;"><a href="kk/頼.html"><ruby>頼<rt>1794</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E67873;"><a href="kk/瀬.html"><ruby>瀬<rt>1795</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68973;"><a href="kk/勅.html"><ruby>勅<rt>1796</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68473;"><a href="kk/疎.html"><ruby>疎<rt>1797</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E68E73;"><a href="kk/瀬.html"><ruby>瀬<rt>1795</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69473;"><a href="kk/勅.html"><ruby>勅<rt>1796</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6A373;"><a href="kk/疎.html"><ruby>疎<rt>1797</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69E73;"><a href="kk/辣.html"><ruby>辣<rt>1798</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6BF73;"><a href="kk/速.html"><ruby>速<rt>1799</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68973;"><a href="kk/整.html"><ruby>整<rt>1800</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69973;"><a href="kk/整.html"><ruby>整<rt>1800</rt></ruby></a></td>
 </tr>
 <tr>
-	<td align=center valign=top style="background:#E68973;"><a href="kk/剣.html"><ruby>剣<rt>1801</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68473;"><a href="kk/険.html"><ruby>険<rt>1802</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68473;"><a href="kk/検.html"><ruby>検<rt>1803</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68973;"><a href="kk/倹.html"><ruby>倹<rt>1804</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68473;"><a href="kk/重.html"><ruby>重<rt>1805</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69973;"><a href="kk/剣.html"><ruby>剣<rt>1801</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69E73;"><a href="kk/険.html"><ruby>険<rt>1802</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E67E73;"><a href="kk/検.html"><ruby>検<rt>1803</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6A373;"><a href="kk/倹.html"><ruby>倹<rt>1804</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6B173;"><a href="kk/重.html"><ruby>重<rt>1805</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6A373;"><a href="kk/動.html"><ruby>動<rt>1806</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68973;"><a href="kk/腫.html"><ruby>腫<rt>1807</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68473;"><a href="kk/勲.html"><ruby>勲<rt>1808</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68473;"><a href="kk/働.html"><ruby>働<rt>1809</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68973;"><a href="kk/種.html"><ruby>種<rt>1810</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6B173;"><a href="kk/腫.html"><ruby>腫<rt>1807</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69E73;"><a href="kk/勲.html"><ruby>勲<rt>1808</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69E73;"><a href="kk/働.html"><ruby>働<rt>1809</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69E73;"><a href="kk/種.html"><ruby>種<rt>1810</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69E73;"><a href="kk/衝.html"><ruby>衝<rt>1811</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68973;"><a href="kk/薫.html"><ruby>薫<rt>1812</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69E73;"><a href="kk/薫.html"><ruby>薫<rt>1812</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69E73;"><a href="kk/病.html"><ruby>病<rt>1813</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6A373;"><a href="kk/痴.html"><ruby>痴<rt>1814</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68473;"><a href="kk/痘.html"><ruby>痘<rt>1815</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68473;"><a href="kk/症.html"><ruby>症<rt>1816</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68473;"><a href="kk/瘍.html"><ruby>瘍<rt>1817</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68973;"><a href="kk/痩.html"><ruby>痩<rt>1818</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6A373;"><a href="kk/痘.html"><ruby>痘<rt>1815</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69E73;"><a href="kk/症.html"><ruby>症<rt>1816</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E67873;"><a href="kk/瘍.html"><ruby>瘍<rt>1817</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69973;"><a href="kk/痩.html"><ruby>痩<rt>1818</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E68473;"><a href="kk/疾.html"><ruby>疾<rt>1819</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68973;"><a href="kk/嫉.html"><ruby>嫉<rt>1820</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68973;"><a href="kk/痢.html"><ruby>痢<rt>1821</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68473;"><a href="kk/痕.html"><ruby>痕<rt>1822</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68473;"><a href="kk/疲.html"><ruby>疲<rt>1823</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68473;"><a href="kk/疫.html"><ruby>疫<rt>1824</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68473;"><a href="kk/痛.html"><ruby>痛<rt>1825</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68973;"><a href="kk/癖.html"><ruby>癖<rt>1826</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68473;"><a href="kk/匿.html"><ruby>匿<rt>1827</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68473;"><a href="kk/匠.html"><ruby>匠<rt>1828</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69473;"><a href="kk/嫉.html"><ruby>嫉<rt>1820</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6B173;"><a href="kk/痢.html"><ruby>痢<rt>1821</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6A373;"><a href="kk/痕.html"><ruby>痕<rt>1822</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E67873;"><a href="kk/疲.html"><ruby>疲<rt>1823</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69973;"><a href="kk/疫.html"><ruby>疫<rt>1824</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69E73;"><a href="kk/痛.html"><ruby>痛<rt>1825</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69973;"><a href="kk/癖.html"><ruby>癖<rt>1826</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69473;"><a href="kk/匿.html"><ruby>匿<rt>1827</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69E73;"><a href="kk/匠.html"><ruby>匠<rt>1828</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69473;"><a href="kk/医.html"><ruby>医<rt>1829</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6A373;"><a href="kk/匹.html"><ruby>匹<rt>1830</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69973;"><a href="kk/区.html"><ruby>区<rt>1831</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68973;"><a href="kk/枢.html"><ruby>枢<rt>1832</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68973;"><a href="kk/殴.html"><ruby>殴<rt>1833</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68973;"><a href="kk/欧.html"><ruby>欧<rt>1834</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68973;"><a href="kk/抑.html"><ruby>抑<rt>1835</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6B173;"><a href="kk/枢.html"><ruby>枢<rt>1832</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E68E73;"><a href="kk/殴.html"><ruby>殴<rt>1833</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69973;"><a href="kk/欧.html"><ruby>欧<rt>1834</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69E73;"><a href="kk/抑.html"><ruby>抑<rt>1835</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E68E73;"><a href="kk/仰.html"><ruby>仰<rt>1836</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E6A373;"><a href="kk/迎.html"><ruby>迎<rt>1837</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68973;"><a href="kk/登.html"><ruby>登<rt>1838</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68973;"><a href="kk/澄.html"><ruby>澄<rt>1839</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69973;"><a href="kk/登.html"><ruby>登<rt>1838</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69473;"><a href="kk/澄.html"><ruby>澄<rt>1839</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E69973;"><a href="kk/発.html"><ruby>発<rt>1840</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68973;"><a href="kk/廃.html"><ruby>廃<rt>1841</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68473;"><a href="kk/僚.html"><ruby>僚<rt>1842</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E68E73;"><a href="kk/廃.html"><ruby>廃<rt>1841</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6A373;"><a href="kk/僚.html"><ruby>僚<rt>1842</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E68973;"><a href="kk/瞭.html"><ruby>瞭<rt>1843</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68473;"><a href="kk/寮.html"><ruby>寮<rt>1844</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E68E73;"><a href="kk/寮.html"><ruby>寮<rt>1844</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E68973;"><a href="kk/療.html"><ruby>療<rt>1845</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E67E73;"><a href="kk/彫.html"><ruby>彫<rt>1846</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E68E73;"><a href="kk/彫.html"><ruby>彫<rt>1846</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E68973;"><a href="kk/形.html"><ruby>形<rt>1847</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E67E73;"><a href="kk/影.html"><ruby>影<rt>1848</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68473;"><a href="kk/杉.html"><ruby>杉<rt>1849</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68473;"><a href="kk/彩.html"><ruby>彩<rt>1850</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69473;"><a href="kk/影.html"><ruby>影<rt>1848</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E68E73;"><a href="kk/杉.html"><ruby>杉<rt>1849</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69E73;"><a href="kk/彩.html"><ruby>彩<rt>1850</rt></ruby></a></td>
 </tr>
 <tr>
-	<td align=center valign=top style="background:#E67E73;"><a href="kk/彰.html"><ruby>彰<rt>1851</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68473;"><a href="kk/彦.html"><ruby>彦<rt>1852</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68473;"><a href="kk/顔.html"><ruby>顔<rt>1853</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E67873;"><a href="kk/彰.html"><ruby>彰<rt>1851</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69E73;"><a href="kk/彦.html"><ruby>彦<rt>1852</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E67873;"><a href="kk/顔.html"><ruby>顔<rt>1853</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E68973;"><a href="kk/須.html"><ruby>須<rt>1854</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E68973;"><a href="kk/膨.html"><ruby>膨<rt>1855</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68473;"><a href="kk/参.html"><ruby>参<rt>1856</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69473;"><a href="kk/参.html"><ruby>参<rt>1856</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E68973;"><a href="kk/惨.html"><ruby>惨<rt>1857</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68473;"><a href="kk/修.html"><ruby>修<rt>1858</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68473;"><a href="kk/珍.html"><ruby>珍<rt>1859</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68473;"><a href="kk/診.html"><ruby>診<rt>1860</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E67873;"><a href="kk/修.html"><ruby>修<rt>1858</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6A373;"><a href="kk/珍.html"><ruby>珍<rt>1859</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69473;"><a href="kk/診.html"><ruby>診<rt>1860</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E68E73;"><a href="kk/文.html"><ruby>文<rt>1861</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E67E73;"><a href="kk/対.html"><ruby>対<rt>1862</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68473;"><a href="kk/紋.html"><ruby>紋<rt>1863</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69E73;"><a href="kk/対.html"><ruby>対<rt>1862</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69473;"><a href="kk/紋.html"><ruby>紋<rt>1863</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E68973;"><a href="kk/蚊.html"><ruby>蚊<rt>1864</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E68973;"><a href="kk/斑.html"><ruby>斑<rt>1865</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68473;"><a href="kk/斉.html"><ruby>斉<rt>1866</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E67E73;"><a href="kk/剤.html"><ruby>剤<rt>1867</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69973;"><a href="kk/斉.html"><ruby>斉<rt>1866</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E68E73;"><a href="kk/剤.html"><ruby>剤<rt>1867</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E68973;"><a href="kk/済.html"><ruby>済<rt>1868</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E67E73;"><a href="kk/斎.html"><ruby>斎<rt>1869</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E67E73;"><a href="kk/粛.html"><ruby>粛<rt>1870</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69973;"><a href="kk/斎.html"><ruby>斎<rt>1869</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69473;"><a href="kk/粛.html"><ruby>粛<rt>1870</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E68973;"><a href="kk/塁.html"><ruby>塁<rt>1871</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68473;"><a href="kk/楽.html"><ruby>楽<rt>1872</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E67E73;"><a href="kk/薬.html"><ruby>薬<rt>1873</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E67E73;"><a href="kk/率.html"><ruby>率<rt>1874</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E67873;"><a href="kk/渋.html"><ruby>渋<rt>1875</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E67873;"><a href="kk/摂.html"><ruby>摂<rt>1876</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68473;"><a href="kk/央.html"><ruby>央<rt>1877</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E67E73;"><a href="kk/英.html"><ruby>英<rt>1878</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69473;"><a href="kk/楽.html"><ruby>楽<rt>1872</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6A373;"><a href="kk/薬.html"><ruby>薬<rt>1873</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E68E73;"><a href="kk/率.html"><ruby>率<rt>1874</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E67E73;"><a href="kk/渋.html"><ruby>渋<rt>1875</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E68473;"><a href="kk/摂.html"><ruby>摂<rt>1876</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69E73;"><a href="kk/央.html"><ruby>央<rt>1877</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E69E73;"><a href="kk/英.html"><ruby>英<rt>1878</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E68973;"><a href="kk/映.html"><ruby>映<rt>1879</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E68473;"><a href="kk/赤.html"><ruby>赤<rt>1880</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E67873;"><a href="kk/赦.html"><ruby>赦<rt>1881</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E67873;"><a href="kk/変.html"><ruby>変<rt>1882</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E67873;"><a href="kk/跡.html"><ruby>跡<rt>1883</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E67E73;"><a href="kk/蛮.html"><ruby>蛮<rt>1884</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6A873;"><a href="kk/赤.html"><ruby>赤<rt>1880</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E68973;"><a href="kk/赦.html"><ruby>赦<rt>1881</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E67E73;"><a href="kk/変.html"><ruby>変<rt>1882</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E67E73;"><a href="kk/跡.html"><ruby>跡<rt>1883</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E6A373;"><a href="kk/蛮.html"><ruby>蛮<rt>1884</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E68973;"><a href="kk/恋.html"><ruby>恋<rt>1885</rt></ruby></a></td>
-	<td align=center valign=top style="background:#E67873;"><a href="kk/湾.html"><ruby>湾<rt>1886</rt></ruby></a></td>
+	<td align=center valign=top style="background:#E68473;"><a href="kk/湾.html"><ruby>湾<rt>1886</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E67873;"><a href="kk/黄.html"><ruby>黄<rt>1887</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E67873;"><a href="kk/横.html"><ruby>横<rt>1888</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E67873;"><a href="kk/把.html"><ruby>把<rt>1889</rt></ruby></a></td>
