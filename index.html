@@ -2,6 +2,20 @@
 <html>
 <head>
 <title>Anki Kanji Grid</title>
+
+<script>
+
+$(".more_info").click(function () {
+    var $title = $(this).find(".title");
+    if (!$title.length) {
+        $(this).append('<span class="title">' + $(this).attr("title") + '</span>');
+    } else {
+        $title.remove();
+    }
+});
+
+</script>
+
 </head>
 <body bgcolor="#FFF">
 <span style="font-size: 3em;color: #888;">Kanji Grid</span><span style="font-size: 1em;color=#888;float:right;">２０１７年０１月０７日</span><br>
@@ -11,13 +25,27 @@ td {overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
 table {font-size:100%; font-family:Hiragino Mincho Pro W3;}
 .key{display:inline-block;width:3em;}
 a,a:visited{color:#000;text-decoration:none;}
+.more_info {
+  border-bottom: 1px dotted;
+  position: relative;
+}
+
+.more_info .title {
+    position: absolute;
+    top: 20px;
+    background: silver;
+    padding: 4px;
+    left: 0;
+    white-space: nowrap;
+}
+
 </style>
 <p style="float: right">Weak&nbsp;<span class="key" style="background-color: #E67373;">&nbsp;</span><span class="key" style="background-color: #E6C973;">&nbsp;</span><span class="key" style="background-color: #ACE673;">&nbsp;</span><span class="key" style="background-color: #73E690;">&nbsp;</span><span class="key" style="background-color: #73E6E6;">&nbsp;</span><span class="key" style="background-color: #7390E6;">&nbsp;</span><span class="key" style="background-color: #AC73E6;">&nbsp;</span>&nbsp;Strong</p></div>
 <div style="clear: both;"><br><hr style="border-style: dashed;border-color: #666;width: 60%;"><br></div>
 <center>
 <h4 style="color:#888;">2226 total unique kanji</h4>
 <table border-collapse: collapse; width='100%'><tr>
-	<td align=center valign=top style="background:#7374E6;"><a href="kk/一.html"><ruby>一<rt>1</rt></ruby></a></td>
+	<td align=center valign=top style="background:#7374E6;"><a href="kk/一.html"><ruby><span class="more_info" title="also called an underscore">一</span><rt>1</rt></ruby></a></td>
 	<td align=center valign=top style="background:#7378E6;"><a href="kk/二.html"><ruby>二<rt>2</rt></ruby></a></td>
 	<td align=center valign=top style="background:#7573E6;"><a href="kk/三.html"><ruby>三<rt>3</rt></ruby></a></td>
 	<td align=center valign=top style="background:#A1E673;"><a href="kk/四.html"><ruby>四<rt>4</rt></ruby></a></td>
