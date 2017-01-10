@@ -2,8 +2,9 @@
 <html>
 <head>
 <title>Anki Kanji Grid</title>
+<script src="jquery-3.1.1.min.js"></script>
 </head>
-<body bgcolor="#FFF">
+<body bgcolor="#FFF";rel="tooltip">
 <span style="font-size: 3em;color: #888;">Kanji Grid</span><span style="font-size: 1em;color=#888;float:right;">２０１７年０１月０７日</span><br>
 <div style="margin-bottom: 24pt;padding: 20pt;"><p style="float: left">Key:</p>
 <style type="text/css">
@@ -11,16 +12,61 @@ td {overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
 table {font-size:100%; font-family:Hiragino Mincho Pro W3;}
 .key{display:inline-block;width:3em;}
 a,a:visited{color:#000;text-decoration:none;}
+#tooltip
+{
+    text-align: center;
+    color: #fff;
+    background: #111;
+    position: absolute;
+    z-index: 100;
+    padding: 15px;
+}
+ 
+    #tooltip:after /* triangle decoration */
+    {
+        width: 0;
+        height: 0;
+        border-left: 10px solid transparent;
+        border-right: 10px solid transparent;
+        border-top: 10px solid #111;
+        content: '';
+        position: absolute;
+        left: 50%;
+        bottom: -10px;
+        margin-left: -10px;
+    }
+ 
+        #tooltip.top:after
+        {
+            border-top-color: transparent;
+            border-bottom: 10px solid #111;
+            top: -20px;
+            bottom: auto;
+        }
+ 
+        #tooltip.left:after
+        {
+            left: 10px;
+            margin: 0;
+        }
+ 
+        #tooltip.right:after
+        {
+            right: 10px;
+            left: auto;
+            margin: 0;
+        }
 </style>
 <p style="float: right">Weak&nbsp;<span class="key" style="background-color: #E67373;">&nbsp;</span><span class="key" style="background-color: #E6C973;">&nbsp;</span><span class="key" style="background-color: #ACE673;">&nbsp;</span><span class="key" style="background-color: #73E690;">&nbsp;</span><span class="key" style="background-color: #73E6E6;">&nbsp;</span><span class="key" style="background-color: #7390E6;">&nbsp;</span><span class="key" style="background-color: #AC73E6;">&nbsp;</span>&nbsp;Strong</p></div>
 <div style="clear: both;"><br><hr style="border-style: dashed;border-color: #666;width: 60%;"><br></div>
 <center>
 <h4 style="color:#888;">2226 total unique kanji</h4>
+<abbr title="Four" rel="tooltip">四</abbr>
 <table border-collapse: collapse; width='100%'><tr>
-	<td align=center valign=top style="background:#7374E6;"><a href="kk/一.html"><ruby>一<rt>1</rt></ruby></a></td>
+	<td align=center valign=top style="background:#7374E6;"><a href="kk/一.html"><ruby><abbr title="One" rel="tooltip">一</abbr><rt>1</rt></ruby></a></td>
 	<td align=center valign=top style="background:#7378E6;"><a href="kk/二.html"><ruby>二<rt>2</rt></ruby></a></td>
 	<td align=center valign=top style="background:#7573E6;"><a href="kk/三.html"><ruby>三<rt>3</rt></ruby></a></td>
-	<td align=center valign=top style="background:#A1E673;"><a href="kk/四.html"><ruby>四<rt>4</rt></ruby></a></td>
+	<td align=center valign=top style="background:#A1E673;"><a href="kk/四.html"><ruby><abbr title="Four" rel="tooltip">四</abbr><rt>4</rt></ruby></a></td>
 	<td align=center valign=top style="background:#7377E6;"><a href="kk/五.html"><ruby>五<rt>5</rt></ruby></a></td>
 	<td align=center valign=top style="background:#7377E6;"><a href="kk/六.html"><ruby>六<rt>6</rt></ruby></a></td>
 	<td align=center valign=top style="background:#739EE6;"><a href="kk/七.html"><ruby>七<rt>7</rt></ruby></a></td>
@@ -2332,4 +2378,81 @@ a,a:visited{color:#000;text-decoration:none;}
 	<td align=center valign=top style="background:#FFF;"><a href="kk/呑.html"><ruby>呑<rt>2225</rt></ruby></a></td>
 	<td align=center valign=top style="background:#E67873;"><a href="kk/籠.html"><ruby>籠<rt>2226</rt></ruby></a></td>
 </tr></table>
-</center></body></html>
+</center><script>
+$( function()
+{
+    var targets = $( '[rel~=tooltip]' ),
+        target  = false,
+        tooltip = false,
+        title   = false;
+ 
+    targets.bind( 'mouseenter', function()
+    {
+        target  = $( this );
+        tip     = target.attr( 'title' );
+        tooltip = $( '<div id="tooltip"></div>' );
+ 
+        if( !tip || tip == '' )
+            return false;
+ 
+        target.removeAttr( 'title' );
+        tooltip.css( 'opacity', 0 )
+               .html( tip )
+               .appendTo( 'body' );
+ 
+        var init_tooltip = function()
+        {
+            if( $( window ).width() < tooltip.outerWidth() * 1.5 )
+                tooltip.css( 'max-width', $( window ).width() / 2 );
+            else
+                tooltip.css( 'max-width', 340 );
+ 
+            var pos_left = target.offset().left + ( target.outerWidth() / 2 ) - ( tooltip.outerWidth() / 2 ),
+                pos_top  = target.offset().top - tooltip.outerHeight() - 20;
+ 
+            if( pos_left < 0 )
+            {
+                pos_left = target.offset().left + target.outerWidth() / 2 - 20;
+                tooltip.addClass( 'left' );
+            }
+            else
+                tooltip.removeClass( 'left' );
+ 
+            if( pos_left + tooltip.outerWidth() > $( window ).width() )
+            {
+                pos_left = target.offset().left - tooltip.outerWidth() + target.outerWidth() / 2 + 20;
+                tooltip.addClass( 'right' );
+            }
+            else
+                tooltip.removeClass( 'right' );
+ 
+            if( pos_top < 0 )
+            {
+                var pos_top  = target.offset().top + target.outerHeight();
+                tooltip.addClass( 'top' );
+            }
+            else
+                tooltip.removeClass( 'top' );
+ 
+            tooltip.css( { left: pos_left, top: pos_top } )
+                   .animate( { top: '+=10', opacity: 1 }, 50 );
+        };
+ 
+        init_tooltip();
+        $( window ).resize( init_tooltip );
+ 
+        var remove_tooltip = function()
+        {
+            tooltip.animate( { top: '-=10', opacity: 0 }, 50, function()
+            {
+                $( this ).remove();
+            });
+ 
+            target.attr( 'title', tip );
+        };
+ 
+        target.bind( 'mouseleave', remove_tooltip );
+        tooltip.bind( 'click', remove_tooltip );
+    });
+});
+</script></body></html>
