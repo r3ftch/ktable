@@ -277,11 +277,11 @@ class KanjiGridh:
                         tooltip += "Background: %s | Index: %s" % (bgcolour, count)
                         table += "\t<td align=center valign=top style=\"background:%s;\" title=\"%s\">" % (bgcolour, tooltip)
                     else: table += "\t<td align=center valign=top style=\"background:%s;\">" % (bgcolour)
-                    table += "<a href=\"kk/%s.html\">%s</a></td>\n" % (2*(unit.value,))
+                    table += "<a href=\"kk/%s.html\"><ruby>%s<rt>%d</rt></ruby></a></td>\n" % (unit.value,unit.value,count+1)
             table += "</tr></table>\n"
             self.html += "<h4 style=\"color:#888;\">%d total unique kanji</h4>\n" % (count+1)
             self.html += table
-        self.html += "</center></body></html>\n"
+        self.html += "</center>\n</body>\n</html>\n"
 
     def displaygrid(self, units, timeNow):
         self.generate(units, timeNow)
