@@ -175,7 +175,9 @@ class KanjiGridh:
         #self.html += "<span style=\"font-size: 3em;color: #888;\">Kanji Grid - %s</span><br>\n" % deckname
         self.html += "<span style=\"font-size: 3em;color: #888;\">Kanji Grid</span><br>\n"
         self.html += "<div style=\"margin-bottom: 24pt;padding: 20pt;\"><p style=\"float: left\">Key:</p>"
-        self.html += "<style type=\"text/css\">td {overflow: hidden; text-overflow: ellipsis; white-space: nowrap;} table {font-size:100%; font-family:Hiragino Mincho Pro W3;}" + \
+        self.html += "<style type=\"text/css\">" + \
+                     ".kanji { \ntable-layout: fixed; \nwidth: 100%; \nwhite-space: nowrap; \nfont-family:Hiragino Mincho Pro W3; \nfont-size:100%; \n}" + \
+                     ".kanji td { \nwhite-space: nowrap; \noverflow: hidden; \ntext-overflow: ellipsis; \nfont-size: 1.0vw; \n}" + \
         			 ".key{display:inline-block;width:3em;}a,a:visited{color:#000;text-decoration:none;}</style>"
         self.html += "<p style=\"float: right\">Weak&nbsp;"
         for c in [n/6.0 for n in range(6+1)]:
@@ -320,7 +322,7 @@ class KanjiGridh:
             mw.progress.finish()
             showInfo("Page saved to %s!" % os.path.abspath(fileOut.name))
         return
-    
+
     def savepng(self):
         fileName = QFileDialog.getSaveFileName(self.win, "Save Page", QDesktopServices.storageLocation(QDesktopServices.DesktopLocation), "Portable Network Graphics (*.png)")
         if fileName != "":
@@ -339,7 +341,7 @@ class KanjiGridh:
             mw.progress.finish()
             showInfo("Image saved to %s!" % os.path.abspath(fileName))
         return
-		
+
 	def savejpg(self):
 		fileName = QFileDialog.getSaveFileName(self.win, "Save Page", QDesktopServices.storageLocation(QDesktopServices.DesktopLocation), "Joint Photographic Experts Group (*.jpg)")
 		if fileName != "":
@@ -358,7 +360,7 @@ class KanjiGridh:
 			mw.progress.finish()
 			showInfo("Image saved to %s!" % os.path.abspath(fileName))
 		return
-		
+
     def kanjigridh(self):
         #self.did = mw.col.conf['curDeck']
         #dids = [self.did]
