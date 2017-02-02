@@ -171,14 +171,14 @@ class KanjiGridh:
         if saveMode: cols = _wide
         else: cols = _thin
         self.html  = "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>\n"
-        self.html += "<html><head><title>Anki Kanji Grid</title></head><body bgcolor=\"#FFF\">\n"
+        self.html += "<html>\n<head>\n<title>Anki Kanji Grid</title>\n</head>\n<body bgcolor=\"#FFF\">\n"
         #self.html += "<span style=\"font-size: 3em;color: #888;\">Kanji Grid - %s</span><br>\n" % deckname
-        self.html += "<span style=\"font-size: 3em;color: #888;\">Kanji Grid</span><br>\n"
-        self.html += "<div style=\"margin-bottom: 24pt;padding: 20pt;\"><p style=\"float: left\">Key:</p>"
-        self.html += "<style type=\"text/css\">" + \
-                     ".kanji { \ntable-layout: fixed; \nwidth: 100%; \nwhite-space: nowrap; \nfont-family:Hiragino Mincho Pro W3; \nfont-size:100%; \n}" + \
-                     ".kanji td { \nwhite-space: nowrap; \noverflow: hidden; \ntext-overflow: ellipsis; \nfont-size: 1.0vw; \n}" + \
-        			 ".key{display:inline-block;width:3em;}a,a:visited{color:#000;text-decoration:none;}</style>"
+        self.html += "<span style=\"font-size: 3em;color: #888;\">Kanji Grid</span><span style=\"font-size: 1em;color=#888;float:right;\">date</span><br>\n"
+        self.html += "<div style=\"margin-bottom: 24pt;padding: 20pt;\">\n<p style=\"float: left\">Key:</p>"
+        self.html += "\n\n<style type=\"text/css\">" + \
+                     "\n\n.kanji { \ntable-layout: fixed; \nwidth: 100%; \nwhite-space: nowrap; \nfont-family:Hiragino Mincho Pro W3; \nfont-size:100%; \n}" + \
+                     "\n\n.kanji td { \nwhite-space: nowrap; \noverflow: hidden; \ntext-overflow: ellipsis; \nfont-size: 1.0vw; \n}" + \
+        			 "\n\n.key{display:inline-block;width:3em;}\na,a:visited{color:#000;text-decoration:none;}\n\n</style>\n"
         self.html += "<p style=\"float: right\">Weak&nbsp;"
         for c in [n/6.0 for n in range(6+1)]:
             self.html += "<span class=\"key\" style=\"background-color: %s;\">&nbsp;</span>" % hsvrgbstr(c/2)
@@ -233,7 +233,7 @@ class KanjiGridh:
 
             chars = reduce(lambda x,y: x+y, dict(_grades).values())
             self.html += "<h2 style=\"color:#888;\">%s Kanji</h2>" % _grades[0][0]
-            table = "<table border-collapse: collapse; width='100%'><tr>\n"
+            table = "<table class=\"kanji\"><tr>\n"
             count = -1
             for unit in [u for u in units.values() if u.value not in chars]:
                 if unit.count != 0 or _unseen:
@@ -254,7 +254,7 @@ class KanjiGridh:
             self.html += "<h4 style=\"color:#888;\">%d of %d - %0.2f%%</h4>\n" % (n, gc, n*100.0/gc)
             self.html += table
         else:
-            table = "<table border-collapse: collapse; width='100%'><tr>\n"
+            table = "<table class=\"kanji\"><tr>\n"
             if _group == 2: # Order found
                 unitsList = sorted( units.values(), key=lambda unit: (unit.idx, unit.count) )
             if _group == 3: # Unicode index
