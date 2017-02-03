@@ -171,7 +171,7 @@ class KanjiGridh:
         if saveMode: cols = _wide
         else: cols = _thin
         self.html  = "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>\n"
-        self.html += "<html>\n<head>\n<title>Anki Kanji Grid</title>\n</head>\n<body bgcolor=\"#FFF\">\n"
+        self.html += "<html>\n<head>\n<title>Kanji Kentei Grid</title>\n</head>\n<body bgcolor=\"#FFF\">\n"
         #self.html += "<span style=\"font-size: 3em;color: #888;\">Kanji Grid - %s</span><br>\n" % deckname
         self.html += "<span style=\"font-size: 3em;color: #888;\">Kanji Grid</span><span style=\"font-size: 1em;color=#888;float:right;\">date</span><br>\n"
         self.html += "<div style=\"margin-bottom: 24pt;padding: 20pt;\">\n<p style=\"float: left\">Key:</p>"
