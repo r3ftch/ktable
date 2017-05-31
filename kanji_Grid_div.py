@@ -174,7 +174,7 @@ class KanjiGridd:
         if saveMode: cols = _wide
         else: cols = _thin
         self.html = "<!DOCTYPE html>\n"
-        self.html += "<html>\n<head>\n<meta charset=\"utf-8\" />\n<title>漢字</title>\n"
+        self.html += "<html>\n<head>\n<meta charset=\"utf-8\" />\n<title>kanji</title>\n"
         self.html += "\n\n<style type=\"text/css\">" + \
                      "\n\n.divTable { \ndisplay: table; \ntable-layout: fixed; \nwidth: 100%; \nwhite-space: nowrap; \nfont-family:Hiragino Mincho Pro W3; /*\nfont-size:100%;*/ \nfont-size: 1.0vw; \noverflow-x:auto; \nborder-spacing: 0.1em; \nborder-collapse: separate; \n}" + \
                      "\n\n.divTableRow { \ndisplay: table-row;\n}" + \
