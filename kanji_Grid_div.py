@@ -176,21 +176,21 @@ class KanjiGridd:
         self.html = "<!DOCTYPE html>\n"
         self.html += "<html>\n<head>\n<meta charset=\"utf-8\" />\n<title>kanji</title>\n"
         self.html += "\n\n<style type=\"text/css\">" + \
-                     "\n\n.divTable { \ndisplay: table; \ntable-layout: fixed; \nwidth: 100%; \nwhite-space: nowrap; \nfont-family:Hiragino Mincho Pro W3; /*\nfont-size:100%;*/ \nfont-size: 1.0vw; \noverflow-x:auto; \nborder-spacing: 0.1em; \nborder-collapse: separate; \n}" + \
-                     "\n\n.divTableRow { \ndisplay: table-row;\n}" + \
-                     "\n\n.divTableBody { \ndisplay: table-row-group;\n}" + \
-                     "\n\n.divTableCell, .divTableHead { \n/*border: 1px solid #999999;*/ \ndisplay: table-cell; \noverflow: hidden; \ntext-overflow: ellipsis; \nwhite-space: nowrap; \n/*font-size: 1.0vw;*/ \ntext-align: center; \npadding: 0.3em; \n}" + \
-                     "\n\nbody {\nbackground-color: white; \n}" + \
+                     "\n\n.divTable {\ndisplay: table;\ntable-layout: fixed;\nwidth: 100%;\nwhite-space: nowrap;\nfont-family:Hiragino Mincho Pro W3; /*\nfont-size:100%;*/\nfont-size: 1.0vw;\noverflow-x:auto;\nborder-spacing: 0.1em;\nborder-collapse: separate;\n}" + \
+                     "\n\n.divTableRow {\ndisplay: table-row;\n}" + \
+                     "\n\n.divTableBody {\ndisplay: table-row-group;\n}" + \
+                     "\n\n.divTableCell, .divTableHead {\n/*border: 1px solid #999999;*/\ndisplay: table-cell;\noverflow: hidden;\ntext-overflow: ellipsis;\nwhite-space: nowrap;\n/*font-size: 1.0vw;*/\ntext-align: center;\npadding: 0.3em;\n}" + \
+                     "\n\nbody {\nbackground-color: white;\n}" + \
                      "\n\nhr {\nborder-color: #666;\nwidth: 80%;\nborder: 0;\nheight: 1px;\nbackground-image: -webkit-linear-gradient(left, #f0f0f0, #8c8b8b, #f0f0f0);\nbackground-image: -moz-linear-gradient(left, #f0f0f0, #8c8b8b, #f0f0f0);\nbackground-image: -ms-linear-gradient(left, #f0f0f0, #8c8b8b, #f0f0f0);\nbackground-image: -o-linear-gradient(left, #f0f0f0, #8c8b8b, #f0f0f0);\n}" + \
                      "\n\n.key{display:inline-block;width:3em;}\na,a:visited{color:#000;text-decoration:none;}\n\n</style>\n</head>\n"
                      #"\n\n.divTableHeading { \nbackground-color: #EEE; \ndisplay: table-header-group; \nfont-weight: bold; \n}" + \
                      #"\n\n.divTableFoot { \nbackground-color: #EEE; \ndisplay: table-footer-group; \nfont-weight: bold; \n}" + \
         #self.html += "<span style=\"font-size: 3em;color: #888;\">Kanji Grid - %s</span><br>\n" % deckname
-        self.html += "<span style=\"font-size: 3em;color: #888;\">Kanji Grid</span><span style=\"font-size: 1em;color:#888;float:right;\">date</span><br>\n"
-        self.html += "<div style=\"margin-bottom: 24pt;padding: 20pt;\">\n<p style=\"float: left\">Key:</p>"
+        self.html += "<span style=\"font-size: 3em;color: #888;\"><img style=\"vertical-align:middle\" src=\"kanji.gif\" alt=\"\" width=\"100\" height=\"100\" /></span><span style=\"font-size: 1em;color:#888;float:right;\">date</span><br>\n"
+        self.html += "<div style=\"margin-bottom: 24pt;padding: 20pt;\">\n<p style=\"float: right\">"
 
 
-        self.html += "<p style=\"float: right\">Weak&nbsp;"
+        self.html += "Weak&nbsp;"
         for c in [n/6.0 for n in range(6+1)]:
             self.html += "<span class=\"key\" style=\"background-color: %s;\">&nbsp;</span>" % hsvrgbstr(c/2)
         self.html += "&nbsp;Strong</p></div>\n"
