@@ -183,9 +183,9 @@ class KanjiGridd:
                      "\n\nbody {\nbackground-color: white;\n}" + \
                      "\n\nhr {\nborder-color: #666;\nwidth: 80%;\nborder: 0;\nheight: 1px;\nbackground-image: -webkit-linear-gradient(left, #f0f0f0, #8c8b8b, #f0f0f0);\nbackground-image: -moz-linear-gradient(left, #f0f0f0, #8c8b8b, #f0f0f0);\nbackground-image: -ms-linear-gradient(left, #f0f0f0, #8c8b8b, #f0f0f0);\nbackground-image: -o-linear-gradient(left, #f0f0f0, #8c8b8b, #f0f0f0);\n}" + \
                      "\n\n.key{display:inline-block;width:3em;}\na,a:visited{color:#000;text-decoration:none;}" + \
-                     "\n\n.frame_div {\ndisplay:none;\nposition: relative;\n}\n" + \
-                     "\n\n.frame_div iframe {\ndisplay:inline-flex;\nposition: relative;\n}\n" + \
-                     "\n\n.click_iframe{\ndisplay:inline-flex;\nvertical-align:top;\n}\n" + \
+                     "\n\n.frame_div {\ndisplay:none;\nposition: relative;\n}" + \
+                     "\n\n.frame_div iframe {\ndisplay:inline-flex;\nposition: relative;\n}" + \
+                     "\n\n.click_iframe{\ndisplay:inline-flex;\nvertical-align:top;\n}" + \
                      "\n\n.click_iframe:active + div{\ndisplay:inline-flex;\nposition: absolute;\n}\n\n</style>\n</head>\n"
 
                      #"\n\n.divTableHeading { \nbackground-color: #EEE; \ndisplay: table-header-group; \nfont-weight: bold; \n}" + \
