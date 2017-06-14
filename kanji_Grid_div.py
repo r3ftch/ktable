@@ -175,18 +175,9 @@ class KanjiGridd:
         else: cols = _thin
         self.html = "<!DOCTYPE html>\n"
         self.html += "<html>\n<head>\n<meta charset=\"utf-8\" />\n<title>kanji</title>\n"
-        self.html += "\n\n<style type=\"text/css\">" + \
-                     "\n\n.divTable {\ndisplay: table;\ntable-layout: fixed;\nwidth: 100%;\nwhite-space: nowrap;\nfont-family:Hiragino Mincho Pro W3; /*\nfont-size:100%;*/\nfont-size: 1.0vw;\noverflow-x:auto;\nborder-spacing: 0.1em;\nborder-collapse: separate;\n}" + \
-                     "\n\n.divTableRow {\ndisplay: table-row;\n}" + \
-                     "\n\n.divTableBody {\ndisplay: table-row-group;\n}" + \
-                     "\n\n.divTableCell, .divTableHead {\n/*border: 1px solid #999999;*/\ndisplay: table-cell;\noverflow: hidden;\ntext-overflow: ellipsis;\nwhite-space: nowrap;\n/*font-size: 1.0vw;*/\ntext-align: center;\npadding: 0.3em;\n}" + \
-                     "\n\nbody {\nbackground-color: white;\n}" + \
-                     "\n\nhr {\nborder-color: #666;\nwidth: 80%;\nborder: 0;\nheight: 1px;\nbackground-image: -webkit-linear-gradient(left, #f0f0f0, #8c8b8b, #f0f0f0);\nbackground-image: -moz-linear-gradient(left, #f0f0f0, #8c8b8b, #f0f0f0);\nbackground-image: -ms-linear-gradient(left, #f0f0f0, #8c8b8b, #f0f0f0);\nbackground-image: -o-linear-gradient(left, #f0f0f0, #8c8b8b, #f0f0f0);\n}" + \
-                     "\n\n.key{display:inline-block;width:3em;}\na,a:visited{color:#000;text-decoration:none;}" + \
-                     "\n\n.frame_div {\ndisplay:none;\nposition: relative;\n}" + \
-                     "\n\n.frame_div iframe {\ndisplay:inline-flex;\nposition: relative;\n}" + \
-                     "\n\n.click_iframe{\ndisplay:inline-flex;\nvertical-align:top;\n}" + \
-                     "\n\n.click_iframe:active + div{\ndisplay:inline-flex;\nposition: absolute;\n}\n\n</style>\n</head>\n"
+        self.html += "\n<link href=\"css/kkg.css\" rel=\"stylesheet\">\n"
+        self.html += "<link href=\"css/color.css\" rel=\"stylesheet\">\n"
+        self.html += "\n</head>\n"
 
                      #"\n\n.divTableHeading { \nbackground-color: #EEE; \ndisplay: table-header-group; \nfont-weight: bold; \n}" + \
                      #"\n\n.divTableFoot { \nbackground-color: #EEE; \ndisplay: table-footer-group; \nfont-weight: bold; \n}" + \
@@ -292,7 +283,7 @@ class KanjiGridd:
                         tooltip += "Avg Interval: %s | Score: %s | " % (unit.avg_interval, score)
                         tooltip += "Background: %s | Index: %s" % (bgcolour, count)
                         table += "\t<td align=center valign=top style=\"background:%s;\" title=\"%s\">" % (bgcolour, tooltip)
-                    else: table += "\t<div style=\"background-color: %s\" class=\"divTableCell\">" % (bgcolour)
+                    else: table += "\t<div id=\"i%s\" class=\"divTableCell\">" % (count+1)
                     table += "<a href=\"kk/%s.html\"><ruby>%s<rt>%d</rt></ruby></a></div>\n" % (unit.value,unit.value,count+1)
             table += "</div>\n</div>\n</div>\n"
             self.html += "<h4 style=\"color:#888;\">%d total unique kanji</h4>\n" % (count+1)
