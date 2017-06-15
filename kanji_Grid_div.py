@@ -167,7 +167,7 @@ def hsvrgbstr(h, s=0.5, v=0.9):
 class KanjiGrid_:
     def __init__(self, mw):
         if mw:
-            self.menuAction = QAction("Generate Kanji Grid DIV", mw)
+            self.menuAction = QAction("Generate kanji grid", mw)
             mw.connect(self.menuAction, SIGNAL("triggered()"), self.setup)
             mw.form.menuTools.addSeparator()
             mw.form.menuTools.addAction(self.menuAction)
