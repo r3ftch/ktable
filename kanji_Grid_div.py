@@ -14,7 +14,7 @@
 #add this line 3190
 #<details><summary>Show/Hide me</summary>
 
-import time,codecs,math,os,unicodedata
+import time,codecs,math,os,unicodedata,datetime
 from aqt import mw
 from anki.js import jquery
 from aqt.utils import showInfo
@@ -100,6 +100,9 @@ _jlpt = [ (u'Non-Jouyou', ''),
     ]
 # /fix by random coder #
 
+now = datetime.datetime.now()
+date=now.strftime("%Y-%m-%d")
+
 class TestedUnit:
     def __init__(self, value):
         self.idx = 0
@@ -161,7 +164,7 @@ def hsvrgbstr(h, s=0.5, v=0.9):
     if i == 4: return "#%0.2X%0.2X%0.2X" % (t*256,p*256,v*256)
     if i == 5: return "#%0.2X%0.2X%0.2X" % (v*256,p*256,q*256)
 
-class KanjiGridd:
+class KanjiGrid_:
     def __init__(self, mw):
         if mw:
             self.menuAction = QAction("Generate Kanji Grid DIV", mw)
@@ -182,7 +185,7 @@ class KanjiGridd:
                      #"\n\n.divTableHeading { \nbackground-color: #EEE; \ndisplay: table-header-group; \nfont-weight: bold; \n}" + \
                      #"\n\n.divTableFoot { \nbackground-color: #EEE; \ndisplay: table-footer-group; \nfont-weight: bold; \n}" + \
         #self.html += "<span style=\"font-size: 3em;color: #888;\">Kanji Grid - %s</span><br>\n" % deckname
-        self.html += "<span style=\"font-size: 3em;color: #888;\"><img style=\"vertical-align:middle\" src=\"kanji.gif\" alt=\"\" width=\"100\" height=\"100\" /></span><span style=\"font-size: 1em;color:#888;float:right;\">date</span><br>\n"
+        self.html += "<span style=\"font-size: 3em;color: #888;\"><img style=\"vertical-align:middle\" src=\"kanji.gif\" alt=\"\" width=\"100\" height=\"100\" /></span><span style=\"font-size: 1em;color:#888;float:right;\">%s</span><br>\n" % date
         self.html += "<div style=\"margin-bottom: 24pt;padding: 20pt;\">\n<p style=\"float: right\">"
 
 
@@ -322,7 +325,7 @@ class KanjiGridd:
             if not ".htm" in fileName:
                 fileName += ".html"
             fileOut = codecs.open(fileName, 'w', 'utf-8')
-            (units, timeNow) = self.kanjigridd()
+            (units, timeNow) = self.kanjigrid_()
             self.generate(units, timeNow, True)
             fileOut.write(self.html)
             fileOut.close()
@@ -349,7 +352,7 @@ class KanjiGridd:
             showInfo("Image saved to %s!" % os.path.abspath(fileName))
         return
 
-    def kanjigridd(self):
+    def kanjigrid_(self):
         #self.did = mw.col.conf['curDeck']
         #dids = [self.did]
         #for name, id in mw.col.decks.children(self.did):
@@ -390,7 +393,7 @@ class KanjiGridd:
         #global _time
         #_time = time.time()
         #print("%s: %0.3f" % ("Start",time.time()-_time))
-        (units, timeNow) = self.kanjigridd()
+        (units, timeNow) = self.kanjigrid_()
         if units is not None:
             self.displaygrid(units, timeNow)
 
@@ -479,7 +482,7 @@ class KanjiGridd:
 
 if __name__ != "__main__":
     # Save a reference to the toolkit onto the mw, preventing garbage collection of PyQT objects
-    if mw: mw.kanjigridd = KanjiGridd(mw)
+    if mw: mw.kanjigrid_ = KanjiGrid_(mw)
 else:
     print "This is a plugin for the Anki Spaced Repition learning system and cannot be run directly."
     print "Please download Anki2 from <http://ankisrs.net/>"
